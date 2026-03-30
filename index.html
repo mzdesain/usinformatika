@@ -6,7 +6,7 @@
     <title>Ujian Sekolah Informatika - SMAS Tahfidz Al-Quran</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
         .minimal-border { border: 1px solid #f1f5f9; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
@@ -111,6 +111,7 @@
         let currentUser = null;
         let tabSwitchCount = 0;
         let studentName = "";
+        let studentClass = "XII A";
         let submissions = [];
         let selectedSubmission = null;
         let isAuthReady = false;
@@ -152,8 +153,15 @@
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if (data.finalSubmitted) { currentView = 'finished'; studentName = data.name; }
-                    else { studentName = data.name || ""; lastSavedData = data; }
+                    tabSwitchCount = data.tabSwitches || 0;
+                    if (data.finalSubmitted) { 
+                        currentView = 'finished'; 
+                        studentName = data.name; 
+                    } else { 
+                        studentName = data.name || ""; 
+                        studentClass = data.class || "XII A";
+                        lastSavedData = data; 
+                    }
                 }
             } catch (e) { }
         };
@@ -177,7 +185,7 @@
             });
             const data = {
                 name: document.getElementById('input-name')?.value.trim() || studentName,
-                class: document.getElementById('input-class')?.value || "XII A",
+                class: document.getElementById('input-class')?.value || studentClass,
                 tabSwitches: tabSwitchCount,
                 answersA,
                 answersB,
@@ -199,6 +207,39 @@
             } catch (e) { }
         };
 
+        // --- SECURITY LOGIC (TAB SWITCHING) ---
+        const handleSecurityAlert = () => {
+            if (currentView === 'exam' && isAuthReady) {
+                tabSwitchCount++;
+                saveDraft(); // Simpan progres segera setelah melanggar
+                window.showWarning(
+                    `Peringatan: Anda terdeteksi meninggalkan halaman ujian! Jangan membuka tab atau aplikasi lain selama ujian berlangsung.\n\nTotal Pelanggaran: ${tabSwitchCount} kali.`, 
+                    "Peringatan Kejujuran"
+                );
+            }
+        };
+
+        // Deteksi jika tab tidak aktif (Pindah Tab/Minimize)
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === 'hidden') {
+                handleSecurityAlert();
+            }
+        });
+
+        // Deteksi jika fokus hilang (Klik aplikasi lain/Taskbar)
+        window.onblur = () => {
+            handleSecurityAlert();
+        };
+
+        const calculateScore = (answersA, essayScore = 0) => {
+            let correctCount = 0;
+            answersA.forEach((ans, i) => { if (ans === questionsA[i].key) correctCount++; });
+            const rawScore = (correctCount * 2) + parseFloat(essayScore); 
+            const finalScore = Math.round((rawScore / 100) * 88 + 10);
+            let grade = finalScore >= 90 ? 'A' : finalScore >= 80 ? 'B' : finalScore >= 70 ? 'C' : 'D';
+            return { score: finalScore, grade, correct: correctCount };
+        };
+
         const initSubmissionsListener = () => {
             if (!db || !currentUser) return;
             if (unsubscribeSubmissions) unsubscribeSubmissions();
@@ -214,6 +255,16 @@
                 render();
                 window.showWarning("Akses ditolak. Cek Firestore Rules Anda.");
             });
+        };
+
+        const updateEssayScore = async (id, newEssayScore) => {
+            if (!db || !currentUser) return;
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'submissions', id), {
+                essayScore: parseFloat(newEssayScore),
+                graded: true
+            });
+            fetchSubmissions();
+            selectedSubmission = null;
         };
 
         // --- RENDERER ---
@@ -241,7 +292,7 @@
         };
 
         const renderExam = () => `
-            <header class="bg-white border-b border-slate-100 py-6 px-4 mb-4 relative flex justify-between items-center max-w-4xl mx-auto">
+            <header class="bg-white border-b border-slate-100 py-8 px-4 mb-4 relative flex justify-between items-center max-w-4xl mx-auto">
                 <div class="flex items-center space-x-2">
                     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaC7zNuBILaC544879xnoWvGCnxA9Fc83PCg&s" class="h-6 grayscale opacity-50">
                     <h1 class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-800">SMAS TAHFIDZ</h1>
@@ -303,6 +354,19 @@
             </div>
         `;
 
+        const renderFinished = () => `
+            <div class="min-h-screen flex items-center justify-center p-6 text-center">
+                <div class="max-w-sm w-full">
+                    <div class="w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h2 class="text-lg font-bold text-slate-900 mb-2 uppercase tracking-tight">Terima Kasih</h2>
+                    <p class="text-xs text-slate-400 mb-8 font-medium">Ujian Anda telah selesai. Jawaban Anda sudah terkirim secara otomatis.</p>
+                    <button onclick="location.reload()" class="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">Selesai</button>
+                </div>
+            </div>
+        `;
+
         const renderAdminLogin = () => `
             <div class="min-h-screen flex items-center justify-center p-6 bg-slate-50">
                 <div class="bg-white border border-slate-200 p-8 rounded-lg w-full max-w-xs text-center">
@@ -322,10 +386,10 @@
                         <h1 class="text-xs font-bold text-slate-400 uppercase tracking-[0.3em]">Monitor Ujian</h1>
                         <p class="text-base font-bold text-slate-800 mt-1">XII Informatika</p>
                     </div>
-                    <button onclick="window.setView('exam')" class="bg-white border border-slate-200 px-5 py-2 rounded-lg text-[9px] font-bold hover:bg-slate-50 text-slate-400 tracking-widest uppercase">Keluar</button>
+                    <button onclick="window.setView('exam')" class="bg-white border border-slate-200 px-5 py-2 rounded-lg text-[9px] font-bold hover:bg-slate-50 text-slate-400 tracking-widest uppercase transition-all">Keluar</button>
                 </div>
 
-                <div class="bg-white border border-slate-100 rounded-lg overflow-hidden">
+                <div class="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
                             <thead class="bg-slate-50 text-slate-400 text-[9px] uppercase tracking-widest font-bold">
