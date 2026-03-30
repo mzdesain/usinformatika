@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ujian Sekolah Informatika - SMAS Tahfidz Al-Quran Wahdah Islamiyah</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen pb-20">
+
+    <!-- Header Section -->
+    <header class="bg-blue-900 text-white py-8 px-4 shadow-lg mb-8">
+        <div class="max-w-4xl mx-auto text-center">
+            <!-- Logo Sekolah -->
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaC7zNuBILaC544879xnoWvGCnxA9Fc83PCg&s" alt="Logo Sekolah" class="h-24 w-auto mx-auto mb-4 drop-shadow-md rounded-lg">
+            
+            <h2 class="text-sm font-semibold tracking-widest uppercase opacity-80">Pemerintah Provinsi Sulawesi Selatan</h2>
+            <h3 class="text-sm font-semibold uppercase opacity-80">Dinas Pendidikan - Yayasan Pesantren Wahdah Islamiyah</h3>
+            <h1 class="text-2xl md:text-3xl font-bold mt-2">SMAS TAHFIDZ AL-QURAN WAHDAH ISLAMIYAH ANABANUA</h1>
+            <div class="mt-4 flex flex-wrap justify-center gap-2 text-xs opacity-90">
+                <span class="bg-blue-800 px-3 py-1 rounded-full border border-blue-700 uppercase">Mata Pelajaran: Informatika</span>
+                <span class="bg-blue-800 px-3 py-1 rounded-full border border-blue-700 uppercase">Kelas: XII A</span>
+                <span class="bg-blue-800 px-3 py-1 rounded-full border border-blue-700 uppercase tracking-tighter">NPSN: 70012169</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4">
+        
+        <!-- Identity Form -->
+        <section id="identity-section" class="glass-card p-6 rounded-2xl shadow-sm mb-8">
+            <h4 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm">01</span>
+                Identitas Peserta
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
+                    <input type="text" id="student-name" placeholder="Masukkan nama Anda..." class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Kelas</label>
+                    <select id="student-class" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        <option value="XII A">XII A</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section A: Checklist & Pilihan Ganda -->
+        <section class="glass-card p-6 rounded-2xl shadow-sm mb-8">
+            <h4 class="text-lg font-bold text-slate-800 mb-2 flex items-center">
+                <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm">A</span>
+                PILIHAN GANDA & CEKLIS <span class="text-red-500 ml-1 text-xs">* Wajib</span>
+            </h4>
+            <p class="text-sm text-slate-500 mb-6 italic">Pilih salah satu jawaban yang menurut Anda paling tepat.</p>
+
+            <div id="section-a-container" class="space-y-8">
+                <!-- Questions will be injected here via JS -->
+            </div>
+        </section>
+
+        <!-- Section B: Essay -->
+        <section class="glass-card p-6 rounded-2xl shadow-sm mb-8">
+            <h4 class="text-lg font-bold text-slate-800 mb-2 flex items-center">
+                <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm">B</span>
+                ESSAY <span class="text-red-500 ml-1 text-xs">* Wajib</span>
+            </h4>
+            <p class="text-sm text-slate-500 mb-6 italic">Jawablah pertanyaan berikut dengan singkat dan jelas.</p>
+
+            <div id="section-b-container" class="space-y-6">
+                <!-- Essay questions will be injected here via JS -->
+            </div>
+        </section>
+
+        <!-- Submit Button -->
+        <div class="text-center mt-12 pb-10">
+            <button onclick="submitExam()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-12 rounded-xl shadow-lg transform active:scale-95 transition-all">
+                SELESAI & KIRIM JAWABAN
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Modal Warning (Pop up peringatan) -->
+    <div id="modal-warning" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center">
+            <div id="warning-icon" class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 id="warning-title" class="text-lg font-bold text-slate-800 mb-2">Belum Lengkap!</h3>
+            <p id="warning-message" class="text-sm text-slate-600 mb-6"></p>
+            <button onclick="closeWarning()" class="w-full bg-slate-800 text-white py-2 rounded-lg font-semibold hover:bg-slate-900 transition-colors">Tutup</button>
+        </div>
+    </div>
+
+    <!-- Modal Result -->
+    <div id="modal-result" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
+            <div class="p-6 border-b">
+                <h3 class="text-xl font-bold text-slate-800">Ujian Selesai!</h3>
+                <p class="text-sm text-slate-500">Silakan salin teks di bawah ini dan kirimkan ke Guru melalui WhatsApp atau platform yang ditentukan.</p>
+            </div>
+            <div class="p-6 overflow-y-auto bg-slate-50">
+                <pre id="summary-text" class="text-xs md:text-sm bg-white p-4 border rounded-lg whitespace-pre-wrap font-mono"></pre>
+            </div>
+            <div class="p-4 border-t flex justify-between items-center">
+                <button onclick="copyToClipboard()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors">Salin Hasil</button>
+                <button onclick="closeModal()" class="text-slate-500 hover:text-slate-800 font-medium">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variabel untuk deteksi kecurangan
+        let tabSwitchCount = 0;
+        let isExamFinished = false;
+
+        // Data Soal Bagian A
+        const questionsA = [
+            { q: "AI atau Kecerdasan Buatan adalah teknologi yang membuat komputer atau mesin bisa berpikir dan belajar seperti manusia.", opts: ["Benar", "Salah", "Kurang Tepat"] },
+            { q: "Articial Intelligents adalah kepanjangan dari AI.", opts: ["Benar", "Salah", "Kurang Tepat"] },
+            { q: "TIK fokus pada pengembangan teknologi, sedangkan Informatika fokus pada penggunaan teknologi.", opts: ["Benar", "Salah", "Kurang Tepat"] },
+            { q: "Information and Communication Tekhnology adalah kepanjangan dari TIK dalam bahasa inggris.", opts: ["Benar", "Salah", "Kurang Tepat"] },
+            { q: "Hardware adalah semua komponen fisik komputer yang dapat dilihat dan disentuh. Hardware berfungsi sebagai alat input, output, pemroses, dan penyimpan data.", opts: ["Benar", "Salah", "Kurang Tepat"] },
+            { q: "Perangkat keras jaringan yang berfungsi untuk menghubungkan beberapa komputer pada jaringan lokal (LAN) adalah...", opts: ["Router", "Switch/Hub", "Modem", "Repeater"] },
+            { q: "Topologi jaringan yang menggunakan satu kabel pusat sebagai media transmisi data adalah...", opts: ["Topologi Star", "Topologi Mesh", "Topologi Bus", "Topologi Ring"] },
+            { q: "Jenis kabel jaringan yang menggunakan cahaya untuk mengirimkan data dan memiliki kecepatan paling tinggi adalah...", opts: ["UTP", "Coaxial", "Fiber Optic", "STP"] },
+            { q: "Alamat unik yang dimiliki oleh setiap perangkat keras agar dapat teridentifikasi dalam jaringan disebut...", opts: ["IP Address", "MAC Address", "URL", "Gateway"] },
+            { q: "Jaringan komputer yang mencakup area satu kota atau wilayah tertentu disebut dengan...", opts: ["PAN", "LAN", "MAN", "WAN"] },
+            { q: "WWW merupakan singkatan dari istilah teknologi internet yaitu...", opts: ["World Wide Web", "World Web Wide", "Web World Wide", "Wide World Web"] },
+            { q: "Protokol standar yang digunakan untuk mengirim pesan elektronik (email) melalui internet adalah...", opts: ["HTTP", "FTP", "SMTP", "TCP/IP"] },
+            { q: "Manakah di bawah ini yang merupakan contoh dari mesin pencari (Search Engine)?", opts: ["Google & Bing", "Chrome & Firefox", "WhatsApp & Telegram", "Facebook & Instagram"] },
+            { q: "Perangkat yang berfungsi untuk merubah sinyal analog menjadi digital dan sebaliknya agar komputer bisa terhubung ke internet adalah...", opts: ["Hub", "Modem", "Switch", "Router"] },
+            { q: "Sistem yang dirancang untuk mencegah akses yang tidak sah atau mencurigakan masuk ke dalam jaringan pribadi disebut...", opts: ["Firewall", "Antivirus", "Spyware", "Adware"] },
+            { q: "Domain yang biasanya digunakan khusus untuk institusi pendidikan tinggi (Universitas) di Indonesia adalah...", opts: [".com", ".id", ".ac.id", ".go.id"] },
+            { q: "Browser web populer yang dikembangkan dan dimiliki oleh perusahaan Google adalah...", opts: ["Safari", "Opera", "Microsoft Edge", "Google Chrome"] },
+            { q: "Satuan untuk mengukur kecepatan transfer data dalam sebuah jaringan internet adalah...", opts: ["Hertz (Hz)", "Byte (B)", "Bits per second (bps)", "Watt (W)"] },
+            { q: "Upaya penipuan untuk mendapatkan informasi data pribadi seperti password dan kartu kredit dengan menyamar sebagai institusi resmi melalui email/link palsu disebut...", opts: ["Hacking", "Phishing", "Spamming", "Cracking"] },
+            { q: "Perangkat lunak berbahaya yang dirancang untuk merusak, mengganggu, atau mencuri data dari sistem komputer disebut...", opts: ["Software", "Firmware", "Malware", "Hardware"] },
+            { q: "Manakah di bawah ini yang merupakan perangkat keras keluaran (Output Device)?", opts: ["Scanner", "Monitor", "Keyboard", "Mouse"] },
+            { q: "Unit pada komputer yang sering disebut sebagai 'Otak Komputer' karena fungsinya sebagai pusat pemrosesan adalah...", opts: ["Hardisk", "RAM", "CPU", "Power Supply"] },
+            { q: "Apa fungsi utama dari Sistem Operasi (Operating System) pada komputer?", opts: ["Mengelola hardware & software", "Membuat desain grafis", "Menyusun tabel data", "Mengedit video"] },
+            { q: "File dengan ekstensi '.docx' merupakan format dokumen yang biasanya dibuat menggunakan aplikasi...", opts: ["Ms. Excel", "Ms. PowerPoint", "Ms. Word", "Ms. Access"] },
+            { q: "Teknologi nirkabel jarak pendek yang umum digunakan untuk mentransfer file antar perangkat seluler adalah...", opts: ["Infrared", "Bluetooth", "Fiber Optic", "Broadband"] },
+            { q: "Materi dasar yang pertama kali dipelajari mengenai teknologi informasi adalah...", opts: ["Pengenalan Informatika", "Sistem Database", "Kriptografi", "Robotika"] },
+            { q: "Mengapa kita perlu belajar Informatika di sekolah?", opts: ["Agar bisa main game saja", "Mempersiapkan skill digital masa depan", "Hanya untuk syarat kelulusan", "Agar bisa merakit PC sendiri"] },
+            { q: "Tiga komponen utama dalam Teknologi Informasi dan Komunikasi (TIK) adalah...", opts: ["Hardware, Software, Brainware", "Monitor, Mouse, Keyboard", "Google, Yahoo, Bing", "Excel, Word, PowerPoint"] },
+            { q: "Internet sebagai jaringan global yang kita kenal sekarang, awal cikal bakalnya ditemukan pada tahun...", opts: ["1945", "1969 (ARPANET)", "1998", "2010"] },
+            { q: "Apa perbedaan utama antara jaringan lokal (LAN) dengan internet?", opts: ["LAN menggunakan kabel, internet tidak", "Internet cakupannya global, LAN terbatas area kecil", "LAN lebih lambat dari internet", "Internet hanya untuk media sosial"] },
+            { q: "Apakah kepanjangan dari istilah jaringan LAN?", opts: ["Local Area Network", "Link Area Node", "Light Access Net", "Large Area Network"] },
+            { q: "Manakah yang merupakan kumpulan topologi jaringan komputer?", opts: ["Bus, Star, Ring, Mesh", "Keyboard, Mouse, Monitor", "Windows, Linux, Android", "Word, Excel, Access"] },
+            { q: "Di bawah ini yang merupakan jenis platform media sosial populer adalah...", opts: ["WhatsApp, Facebook, Instagram", "Chrome, Firefox, Safari", "Windows, MacOS, Linux", "Photoshop, Corel, Canva"] },
+            { q: "Apa salah satu manfaat positif dari penggunaan media sosial?", opts: ["Mempercepat komunikasi dan berbagi informasi", "Menghabiskan waktu luang", "Memperbanyak kuota internet", "Melihat foto orang lain saja"] },
+            { q: "Salah satu dampak negatif dari media sosial jika tidak digunakan dengan bijak adalah...", opts: ["Penyebaran berita bohong (Hoax)", "Memudahkan mencari materi belajar", "Mendapatkan banyak teman", "Media promosi gratis"] }
+        ];
+
+        // 5 Soal Essay Sisa
+        const questionsB = [
+            "Jelaskan secara singkat apa yang dimaksud dengan Cloud Computing!",
+            "Sebutkan 2 contoh perangkat input (masukan) pada komputer!",
+            "Apa yang dimaksud dengan algoritma dalam konteks pemrograman?",
+            "Mengapa kita perlu menggunakan kata sandi (password) yang kuat untuk akun media sosial?",
+            "Tuliskan langkah-langkah sederhana mengirim file menggunakan layanan Google Drive!"
+        ];
+
+        // Initialize Section A
+        const containerA = document.getElementById('section-a-container');
+        questionsA.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.className = "p-4 rounded-xl border border-slate-100 bg-white shadow-sm";
+            const gridCols = item.opts.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2";
+            div.innerHTML = `
+                <p class="font-semibold text-slate-800 mb-3">${idx + 1}. ${item.q}</p>
+                <div class="grid grid-cols-1 ${gridCols} gap-3">
+                    ${item.opts.map(opt => `
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50 transition-colors border-slate-200 group">
+                            <input type="radio" name="q_a_${idx}" value="${opt}" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                            <span class="ml-3 text-sm text-slate-700 group-hover:text-blue-700">${opt}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+            containerA.appendChild(div);
+        });
+
+        // Initialize Section B
+        const containerB = document.getElementById('section-b-container');
+        questionsB.forEach((q, idx) => {
+            const div = document.createElement('div');
+            div.className = "space-y-2";
+            div.innerHTML = `
+                <label class="block font-semibold text-slate-800">${idx + 1}. ${q}</label>
+                <textarea id="q_b_${idx}" rows="2" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Ketik jawaban Anda di sini..."></textarea>
+            `;
+            containerB.appendChild(div);
+        });
+
+        // Deteksi Pindah Tab (Visibility API)
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "hidden" && !isExamFinished) {
+                tabSwitchCount++;
+            } else if (document.visibilityState === "visible" && !isExamFinished && tabSwitchCount > 0) {
+                showWarning(`PERINGATAN: Anda terdeteksi meninggalkan halaman ujian! Jangan membuka tab lain selama ujian berlangsung. (Pelanggaran: ${tabSwitchCount} kali)`, "Pelanggaran!");
+            }
+        });
+
+        function showWarning(msg, title = "Belum Lengkap!") {
+            document.getElementById('warning-title').textContent = title;
+            document.getElementById('warning-message').textContent = msg;
+            document.getElementById('modal-warning').classList.remove('hidden');
+        }
+
+        function closeWarning() {
+            document.getElementById('modal-warning').classList.add('hidden');
+        }
+
+        function submitExam() {
+            const name = document.getElementById('student-name').value.trim();
+            
+            // 1. Validasi Nama
+            if (!name) {
+                showWarning("Mohon lengkapi Nama Anda sebelum mengirim jawaban.");
+                document.getElementById('student-name').focus();
+                return;
+            }
+
+            // 2. Validasi Jawaban Bagian A
+            let unansweredA = [];
+            questionsA.forEach((_, idx) => {
+                const selected = document.querySelector(`input[name="q_a_${idx}"]:checked`);
+                if (!selected) unansweredA.push(idx + 1);
+            });
+
+            if (unansweredA.length > 0) {
+                showWarning(`Anda belum menjawab soal Pilihan Ganda nomor: ${unansweredA.slice(0, 5).join(", ")}${unansweredA.length > 5 ? '...' : ''}`);
+                return;
+            }
+
+            // 3. Validasi Jawaban Bagian B
+            let unansweredB = [];
+            questionsB.forEach((_, idx) => {
+                const ans = document.getElementById(`q_b_${idx}`).value.trim();
+                if (!ans) unansweredB.push(idx + 1);
+            });
+
+            if (unansweredB.length > 0) {
+                showWarning(`Anda belum menjawab soal Essay nomor: ${unansweredB.join(", ")}`);
+                return;
+            }
+
+            // Jika semua valid, kunci status ujian
+            isExamFinished = true;
+
+            const className = document.getElementById('student-class').value;
+            let resultText = `HASIL UJIAN SEKOLAH INFORMATIKA\n===============================\nNama   : ${name}\nKelas  : ${className}\nTanggal: ${new Date().toLocaleString('id-ID')}\n===============================\nSTATUS KECURANGAN:\nPindah Tab: ${tabSwitchCount} kali\n===============================\n\nBAGIAN A (PG & CEKLIS):\n`;
+            
+            questionsA.forEach((item, idx) => {
+                const selected = document.querySelector(`input[name="q_a_${idx}"]:checked`);
+                resultText += `${idx + 1}. ${selected.value}\n`;
+            });
+            resultText += `\nBAGIAN B (ESSAY):\n`;
+            questionsB.forEach((q, idx) => {
+                const ans = document.getElementById(`q_b_${idx}`).value;
+                resultText += `${idx + 1}. ${ans}\n`;
+            });
+            document.getElementById('summary-text').textContent = resultText;
+            document.getElementById('modal-result').classList.remove('hidden');
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('summary-text').textContent;
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            alert("Jawaban berhasil disalin!");
+            document.body.removeChild(textArea);
+        }
+
+        function closeModal() {
+            document.getElementById('modal-result').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
