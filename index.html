@@ -23,10 +23,29 @@
 <body class="bg-slate-50 min-h-screen">
 
     <div id="app">
-        <!-- Konten akan dirender di sini -->
-        <div class="flex items-center justify-center min-h-screen text-center flex-col">
-            <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p class="text-slate-500 font-medium">Menghubungkan ke Server...</p>
+        <!-- Loader Area -->
+        <div id="loader" class="flex items-center justify-center min-h-screen text-center flex-col p-6">
+            <div id="spinner" class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p id="loader-text" class="text-slate-500 font-medium">Menghubungkan ke Server...</p>
+            
+            <!-- Panduan Jika Config Kosong -->
+            <div id="setup-guide" class="hidden mt-6 p-6 bg-white rounded-2xl shadow-xl max-w-lg border border-orange-200">
+                <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-2">Konfigurasi Belum Siap</h3>
+                <p class="text-sm text-slate-600 mb-4 text-left">Agar fitur simpan otomatis dan panel admin berfungsi di GitHub, Anda perlu memasukkan <b>Firebase Config</b> milik Anda ke dalam file HTML ini.</p>
+                <div class="bg-slate-900 text-slate-300 p-3 rounded-lg text-xs font-mono text-left mb-4 overflow-x-auto">
+                    // Cari bagian ini di kode:<br>
+                    firebaseConfig = {<br>
+                    &nbsp;&nbsp;apiKey: "ISI_DISINI",<br>
+                    &nbsp;&nbsp;...<br>
+                    };
+                </div>
+                <p class="text-xs text-slate-400 italic text-left">Dapatkan di: console.firebase.google.com</p>
+            </div>
         </div>
     </div>
 
@@ -36,12 +55,41 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'ujian-informatika-001';
-        
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // --- KONFIGURASI DATABASE ---
+        let firebaseConfig = {};
+        let appId = 'ujian-informatika-001';
+
+        try {
+            if (typeof __firebase_config !== 'undefined') {
+                firebaseConfig = JSON.parse(__firebase_config);
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'ujian-informatika-001';
+            } else {
+                // ==========================================
+                // JIKA DI GITHUB: KONFIGURASI OTOMATIS TERISI
+                // ==========================================
+                firebaseConfig = {
+                    apiKey: "AIzaSyCdZliEF6yVmdQRNHhSRa4Z9YR1fn-CCYQ",
+                    authDomain: "chatting-22bb9.firebaseapp.com",
+                    projectId: "chatting-22bb9",
+                    storageBucket: "chatting-22bb9.firebasestorage.app",
+                    messagingSenderId: "540910795541",
+                    appId: "1:540910795541:web:785aff5846eab68636c71c"
+                };
+                
+                if (!firebaseConfig.apiKey) {
+                    throw new Error("Missing Config");
+                }
+            }
+        } catch (e) {
+            console.warn("Konfigurasi Firebase Manual Diperlukan");
+            document.getElementById('spinner').classList.add('hidden');
+            document.getElementById('loader-text').classList.add('hidden');
+            document.getElementById('setup-guide').classList.remove('hidden');
+        }
+
+        const app = firebaseConfig.apiKey ? initializeApp(firebaseConfig) : null;
+        const auth = app ? getAuth(app) : null;
+        const db = app ? getFirestore(app) : null;
 
         // --- DATA SOAL (40 PG) ---
         const questionsA = [
@@ -73,7 +121,7 @@
             { q: "Materi dasar yang pertama kali dipelajari mengenai teknologi informasi adalah...", opts: ["Pengenalan Informatika", "Sistem Database", "Kriptografi", "Robotika"], key: "Pengenalan Informatika" },
             { q: "Mengapa kita perlu belajar Informatika di sekolah?", opts: ["Agar bisa main game saja", "Mempersiapkan skill digital masa depan", "Hanya untuk syarat kelulusan", "Agar bisa merakit PC sendiri"], key: "Mempersiapkan skill digital masa depan" },
             { q: "Tiga komponen utama dalam Teknologi Informasi dan Komunikasi (TIK) adalah...", opts: ["Hardware, Software, Brainware", "Monitor, Mouse, Keyboard", "Google, Yahoo, Bing", "Excel, Word, PowerPoint"], key: "Hardware, Software, Brainware" },
-            { q: "Internet sebagai jaringan global yang kita ken kavl sekarang, awal cikal bakalnya ditemukan pada tahun...", opts: ["1945", "1969 (ARPANET)", "1998", "2010"], key: "1969 (ARPANET)" },
+            { q: "Internet sebagai jaringan global yang kita kenal sekarang, awal cikal bakalnya ditemukan pada tahun...", opts: ["1945", "1969 (ARPANET)", "1998", "2010"], key: "1969 (ARPANET)" },
             { q: "Apa perbedaan utama antara jaringan lokal (LAN) dengan internet?", opts: ["LAN menggunakan kabel, internet tidak", "Internet cakupannya global, LAN terbatas area kecil", "LAN lebih lambat dari internet", "Internet hanya untuk media sosial"], key: "Internet cakupannya global, LAN terbatas area kecil" },
             { q: "Apakah kepanjangan dari istilah jaringan LAN?", opts: ["Local Area Network", "Link Area Node", "Light Access Net", "Large Area Network"], key: "Local Area Network" },
             { q: "Manakah yang merupakan kumpulan topologi jaringan komputer?", opts: ["Bus, Star, Ring, Mesh", "Keyboard, Mouse, Monitor", "Windows, Linux, Android", "Word, Excel, Access"], key: "Bus, Star, Ring, Mesh" },
@@ -109,6 +157,7 @@
 
         // --- AUTH INIT ---
         const initAuth = async () => {
+            if (!auth) return;
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
@@ -129,20 +178,25 @@
 
         // --- AUTO-SAVE LOGIC ---
         const loadExistingDraft = async () => {
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'submissions', currentUser.uid);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                if (!data.finalSubmitted) {
-                    studentName = data.name || "";
-                    studentClass = data.class || "XII A";
-                    tabSwitchCount = data.tabSwitches || 0;
-                    lastSavedData = data;
-                } else {
-                    currentView = 'finished';
-                    studentName = data.name;
-                    tabSwitchCount = data.tabSwitches;
+            if (!db || !currentUser) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'submissions', currentUser.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (!data.finalSubmitted) {
+                        studentName = data.name || "";
+                        studentClass = data.class || "XII A";
+                        tabSwitchCount = data.tabSwitches || 0;
+                        lastSavedData = data;
+                    } else {
+                        currentView = 'finished';
+                        studentName = data.name;
+                        tabSwitchCount = data.tabSwitches;
+                    }
                 }
+            } catch (e) {
+                console.error("Draft Load Error:", e);
             }
         };
 
@@ -150,11 +204,11 @@
             if (autoSaveTimer) clearTimeout(autoSaveTimer);
             autoSaveTimer = setTimeout(async () => {
                 await saveDraft();
-            }, 1000); // Tunggu 1 detik setelah input terakhir
+            }, 1000);
         };
 
         const saveDraft = async (isFinal = false) => {
-            if (!currentUser || currentView !== 'exam') return;
+            if (!currentUser || !db || currentView !== 'exam') return;
             
             const nameField = document.getElementById('input-name');
             const classField = document.getElementById('input-class');
@@ -187,18 +241,19 @@
                 essayScore: lastSavedData?.essayScore || 0
             };
 
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'submissions', currentUser.uid);
-            await setDoc(docRef, data);
-            lastSavedData = data;
-            
-            // Indikator visual Simpan
-            const indicator = document.getElementById('save-indicator');
-            if (indicator) {
-                indicator.classList.remove('hidden');
-                indicator.classList.add('flex', 'animate-save');
-                setTimeout(() => {
-                    indicator.classList.remove('animate-save');
-                }, 1000);
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'submissions', currentUser.uid);
+                await setDoc(docRef, data);
+                lastSavedData = data;
+                
+                const indicator = document.getElementById('save-indicator');
+                if (indicator) {
+                    indicator.classList.remove('hidden');
+                    indicator.classList.add('flex', 'animate-save');
+                    setTimeout(() => indicator.classList.remove('animate-save'), 1000);
+                }
+            } catch (e) {
+                console.error("Save Draft Error:", e);
             }
         };
 
@@ -206,7 +261,7 @@
         window.onblur = () => {
             if (currentView === 'exam' && isAuthReady) {
                 tabSwitchCount++;
-                saveDraft(); // Simpan saat tab ditinggalkan
+                saveDraft();
                 alert(`PERINGATAN: Jangan meninggalkan halaman ujian! (Pelanggaran: ${tabSwitchCount})`);
             }
         };
@@ -227,7 +282,7 @@
         };
 
         const fetchSubmissions = async () => {
-            if (!currentUser) return;
+            if (!db || !currentUser) return;
             try {
                 const querySnapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'submissions'));
                 submissions = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -238,7 +293,7 @@
         };
 
         const updateEssayScore = async (id, newEssayScore) => {
-            if (!currentUser) return;
+            if (!db || !currentUser) return;
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'submissions', id);
             await updateDoc(docRef, {
                 essayScore: parseFloat(newEssayScore),
@@ -255,7 +310,6 @@
 
             if (currentView === 'exam') {
                 root.innerHTML = renderExam();
-                // Set data yang sudah tersimpan ke input
                 if (lastSavedData) {
                     document.getElementById('input-name').value = lastSavedData.name || "";
                     document.getElementById('input-class').value = lastSavedData.class || "XII A";
@@ -346,7 +400,6 @@
                 </button>
             </main>
 
-            <!-- Auto Save Indicator -->
             <div id="save-indicator" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-lg border border-slate-200 hidden items-center space-x-2 z-50">
                 <div class="w-2 h-2 bg-green-500 rounded-full"></div>
                 <span class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Tersimpan Otomatis</span>
@@ -354,16 +407,13 @@
         `;
 
         const renderFinished = () => `
-            <div class="min-h-screen flex items-center justify-center p-4">
-                <div class="glass-card p-10 rounded-3xl text-center max-w-md w-full shadow-2xl">
+            <div class="min-h-screen flex items-center justify-center p-4 text-center">
+                <div class="glass-card p-10 rounded-3xl max-w-md w-full shadow-2xl">
                     <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
                         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                     </div>
                     <h2 class="text-2xl font-bold text-slate-800">Ujian Terkirim!</h2>
                     <p class="text-slate-600 mt-3">Alhamdulillah, <b>${studentName}</b>. Jawaban Anda sudah aman.</p>
-                    <div class="mt-6 p-4 bg-orange-50 rounded-xl text-left text-sm text-orange-800 border border-orange-200">
-                        <p><b>Kecurangan:</b> ${tabSwitchCount} kali pindah layar.</p>
-                    </div>
                     <button onclick="location.reload()" class="mt-8 text-blue-600 font-semibold hover:underline">Keluar</button>
                 </div>
             </div>
@@ -523,7 +573,7 @@
             }
 
             try {
-                await saveDraft(true); // Final submit
+                await saveDraft(true);
                 currentView = 'finished';
                 render();
             } catch (err) {
