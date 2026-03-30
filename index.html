@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ujian Sekolah Informatika - SMAS Tahfidz Al-Quran Wahdah Islamiyah</title>
+    <title>Ujian Sekolah Informatika - SMAS Tahfidz Al-Quran</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -15,159 +15,72 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-20">
+<body class="bg-slate-50 min-h-screen">
 
-    <!-- Header Section -->
-    <header class="bg-blue-900 text-white py-8 px-4 shadow-lg mb-8">
-        <div class="max-w-4xl mx-auto text-center">
-            <!-- Logo Sekolah -->
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaC7zNuBILaC544879xnoWvGCnxA9Fc83PCg&s" alt="Logo Sekolah" class="h-24 w-auto mx-auto mb-4 drop-shadow-md rounded-lg">
-            
-            <h2 class="text-sm font-semibold tracking-widest uppercase opacity-80">Pemerintah Provinsi Sulawesi Selatan</h2>
-            <h3 class="text-sm font-semibold uppercase opacity-80">Dinas Pendidikan - Yayasan Pesantren Wahdah Islamiyah</h3>
-            <h1 class="text-2xl md:text-3xl font-bold mt-2">SMAS TAHFIDZ AL-QURAN WAHDAH ISLAMIYAH ANABANUA</h1>
-            <div class="mt-4 flex flex-wrap justify-center gap-2 text-xs opacity-90">
-                <span class="bg-blue-800 px-3 py-1 rounded-full border border-blue-700 uppercase">Mata Pelajaran: Informatika</span>
-                <span class="bg-blue-800 px-3 py-1 rounded-full border border-blue-700 uppercase">Kelas: XII A</span>
-                <span class="bg-blue-800 px-3 py-1 rounded-full border border-blue-700 uppercase tracking-tighter">NPSN: 70012169</span>
-            </div>
+    <div id="app">
+        <!-- Konten akan dirender di sini -->
+        <div class="flex items-center justify-center min-h-screen">
+            <p class="text-slate-500 animate-pulse">Menyiapkan aplikasi...</p>
         </div>
-    </header>
+    </div>
 
-    <main class="max-w-4xl mx-auto px-4">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'ujian-informatika-001';
         
-        <!-- Identity Form -->
-        <section id="identity-section" class="glass-card p-6 rounded-2xl shadow-sm mb-8">
-            <h4 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
-                <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm">01</span>
-                Identitas Peserta
-            </h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-                    <input type="text" id="student-name" placeholder="Masukkan nama Anda..." class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Kelas</label>
-                    <select id="student-class" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                        <option value="XII A">XII A</option>
-                        <option value="Lainnya">Lainnya</option>
-                    </select>
-                </div>
-            </div>
-        </section>
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        <!-- Section A: Checklist & Pilihan Ganda -->
-        <section class="glass-card p-6 rounded-2xl shadow-sm mb-8">
-            <h4 class="text-lg font-bold text-slate-800 mb-2 flex items-center">
-                <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm">A</span>
-                PILIHAN GANDA & CEKLIS <span class="text-red-500 ml-1 text-xs">* Wajib</span>
-            </h4>
-            <p class="text-sm text-slate-500 mb-6 italic">Pilih salah satu jawaban yang menurut Anda paling tepat.</p>
-
-            <div id="section-a-container" class="space-y-8">
-                <!-- Questions will be injected here via JS -->
-            </div>
-        </section>
-
-        <!-- Section B: Essay -->
-        <section class="glass-card p-6 rounded-2xl shadow-sm mb-8">
-            <h4 class="text-lg font-bold text-slate-800 mb-2 flex items-center">
-                <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm">B</span>
-                ESSAY <span class="text-red-500 ml-1 text-xs">* Wajib</span>
-            </h4>
-            <p class="text-sm text-slate-500 mb-6 italic">Jawablah pertanyaan berikut dengan singkat dan jelas.</p>
-
-            <div id="section-b-container" class="space-y-6">
-                <!-- Essay questions will be injected here via JS -->
-            </div>
-        </section>
-
-        <!-- Submit Button -->
-        <div class="text-center mt-12 pb-10">
-            <button onclick="submitExam()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-12 rounded-xl shadow-lg transform active:scale-95 transition-all">
-                SELESAI & KIRIM JAWABAN
-            </button>
-        </div>
-
-    </main>
-
-    <!-- Modal Warning (Pop up peringatan) -->
-    <div id="modal-warning" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center">
-            <div id="warning-icon" class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-            </div>
-            <h3 id="warning-title" class="text-lg font-bold text-slate-800 mb-2">Belum Lengkap!</h3>
-            <p id="warning-message" class="text-sm text-slate-600 mb-6"></p>
-            <button onclick="closeWarning()" class="w-full bg-slate-800 text-white py-2 rounded-lg font-semibold hover:bg-slate-900 transition-colors">Tutup</button>
-        </div>
-    </div>
-
-    <!-- Modal Result -->
-    <div id="modal-result" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
-            <div class="p-6 border-b">
-                <h3 class="text-xl font-bold text-slate-800">Ujian Selesai!</h3>
-                <p class="text-sm text-slate-500">Silakan salin teks di bawah ini dan kirimkan ke Guru melalui WhatsApp atau platform yang ditentukan.</p>
-            </div>
-            <div class="p-6 overflow-y-auto bg-slate-50">
-                <pre id="summary-text" class="text-xs md:text-sm bg-white p-4 border rounded-lg whitespace-pre-wrap font-mono"></pre>
-            </div>
-            <div class="p-4 border-t flex justify-between items-center">
-                <button onclick="copyToClipboard()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors">Salin Hasil</button>
-                <button onclick="closeModal()" class="text-slate-500 hover:text-slate-800 font-medium">Tutup</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Variabel untuk deteksi kecurangan
-        let tabSwitchCount = 0;
-        let isExamFinished = false;
-
-        // Data Soal Bagian A
+        // --- DATA SOAL & KUNCI JAWABAN (Total 40 PG) ---
         const questionsA = [
-            { q: "AI atau Kecerdasan Buatan adalah teknologi yang membuat komputer atau mesin bisa berpikir dan belajar seperti manusia.", opts: ["Benar", "Salah", "Kurang Tepat"] },
-            { q: "Articial Intelligents adalah kepanjangan dari AI.", opts: ["Benar", "Salah", "Kurang Tepat"] },
-            { q: "TIK fokus pada pengembangan teknologi, sedangkan Informatika fokus pada penggunaan teknologi.", opts: ["Benar", "Salah", "Kurang Tepat"] },
-            { q: "Information and Communication Tekhnology adalah kepanjangan dari TIK dalam bahasa inggris.", opts: ["Benar", "Salah", "Kurang Tepat"] },
-            { q: "Hardware adalah semua komponen fisik komputer yang dapat dilihat dan disentuh. Hardware berfungsi sebagai alat input, output, pemroses, dan penyimpan data.", opts: ["Benar", "Salah", "Kurang Tepat"] },
-            { q: "Perangkat keras jaringan yang berfungsi untuk menghubungkan beberapa komputer pada jaringan lokal (LAN) adalah...", opts: ["Router", "Switch/Hub", "Modem", "Repeater"] },
-            { q: "Topologi jaringan yang menggunakan satu kabel pusat sebagai media transmisi data adalah...", opts: ["Topologi Star", "Topologi Mesh", "Topologi Bus", "Topologi Ring"] },
-            { q: "Jenis kabel jaringan yang menggunakan cahaya untuk mengirimkan data dan memiliki kecepatan paling tinggi adalah...", opts: ["UTP", "Coaxial", "Fiber Optic", "STP"] },
-            { q: "Alamat unik yang dimiliki oleh setiap perangkat keras agar dapat teridentifikasi dalam jaringan disebut...", opts: ["IP Address", "MAC Address", "URL", "Gateway"] },
-            { q: "Jaringan komputer yang mencakup area satu kota atau wilayah tertentu disebut dengan...", opts: ["PAN", "LAN", "MAN", "WAN"] },
-            { q: "WWW merupakan singkatan dari istilah teknologi internet yaitu...", opts: ["World Wide Web", "World Web Wide", "Web World Wide", "Wide World Web"] },
-            { q: "Protokol standar yang digunakan untuk mengirim pesan elektronik (email) melalui internet adalah...", opts: ["HTTP", "FTP", "SMTP", "TCP/IP"] },
-            { q: "Manakah di bawah ini yang merupakan contoh dari mesin pencari (Search Engine)?", opts: ["Google & Bing", "Chrome & Firefox", "WhatsApp & Telegram", "Facebook & Instagram"] },
-            { q: "Perangkat yang berfungsi untuk merubah sinyal analog menjadi digital dan sebaliknya agar komputer bisa terhubung ke internet adalah...", opts: ["Hub", "Modem", "Switch", "Router"] },
-            { q: "Sistem yang dirancang untuk mencegah akses yang tidak sah atau mencurigakan masuk ke dalam jaringan pribadi disebut...", opts: ["Firewall", "Antivirus", "Spyware", "Adware"] },
-            { q: "Domain yang biasanya digunakan khusus untuk institusi pendidikan tinggi (Universitas) di Indonesia adalah...", opts: [".com", ".id", ".ac.id", ".go.id"] },
-            { q: "Browser web populer yang dikembangkan dan dimiliki oleh perusahaan Google adalah...", opts: ["Safari", "Opera", "Microsoft Edge", "Google Chrome"] },
-            { q: "Satuan untuk mengukur kecepatan transfer data dalam sebuah jaringan internet adalah...", opts: ["Hertz (Hz)", "Byte (B)", "Bits per second (bps)", "Watt (W)"] },
-            { q: "Upaya penipuan untuk mendapatkan informasi data pribadi seperti password dan kartu kredit dengan menyamar sebagai institusi resmi melalui email/link palsu disebut...", opts: ["Hacking", "Phishing", "Spamming", "Cracking"] },
-            { q: "Perangkat lunak berbahaya yang dirancang untuk merusak, mengganggu, atau mencuri data dari sistem komputer disebut...", opts: ["Software", "Firmware", "Malware", "Hardware"] },
-            { q: "Manakah di bawah ini yang merupakan perangkat keras keluaran (Output Device)?", opts: ["Scanner", "Monitor", "Keyboard", "Mouse"] },
-            { q: "Unit pada komputer yang sering disebut sebagai 'Otak Komputer' karena fungsinya sebagai pusat pemrosesan adalah...", opts: ["Hardisk", "RAM", "CPU", "Power Supply"] },
-            { q: "Apa fungsi utama dari Sistem Operasi (Operating System) pada komputer?", opts: ["Mengelola hardware & software", "Membuat desain grafis", "Menyusun tabel data", "Mengedit video"] },
-            { q: "File dengan ekstensi '.docx' merupakan format dokumen yang biasanya dibuat menggunakan aplikasi...", opts: ["Ms. Excel", "Ms. PowerPoint", "Ms. Word", "Ms. Access"] },
-            { q: "Teknologi nirkabel jarak pendek yang umum digunakan untuk mentransfer file antar perangkat seluler adalah...", opts: ["Infrared", "Bluetooth", "Fiber Optic", "Broadband"] },
-            { q: "Materi dasar yang pertama kali dipelajari mengenai teknologi informasi adalah...", opts: ["Pengenalan Informatika", "Sistem Database", "Kriptografi", "Robotika"] },
-            { q: "Mengapa kita perlu belajar Informatika di sekolah?", opts: ["Agar bisa main game saja", "Mempersiapkan skill digital masa depan", "Hanya untuk syarat kelulusan", "Agar bisa merakit PC sendiri"] },
-            { q: "Tiga komponen utama dalam Teknologi Informasi dan Komunikasi (TIK) adalah...", opts: ["Hardware, Software, Brainware", "Monitor, Mouse, Keyboard", "Google, Yahoo, Bing", "Excel, Word, PowerPoint"] },
-            { q: "Internet sebagai jaringan global yang kita kenal sekarang, awal cikal bakalnya ditemukan pada tahun...", opts: ["1945", "1969 (ARPANET)", "1998", "2010"] },
-            { q: "Apa perbedaan utama antara jaringan lokal (LAN) dengan internet?", opts: ["LAN menggunakan kabel, internet tidak", "Internet cakupannya global, LAN terbatas area kecil", "LAN lebih lambat dari internet", "Internet hanya untuk media sosial"] },
-            { q: "Apakah kepanjangan dari istilah jaringan LAN?", opts: ["Local Area Network", "Link Area Node", "Light Access Net", "Large Area Network"] },
-            { q: "Manakah yang merupakan kumpulan topologi jaringan komputer?", opts: ["Bus, Star, Ring, Mesh", "Keyboard, Mouse, Monitor", "Windows, Linux, Android", "Word, Excel, Access"] },
-            { q: "Di bawah ini yang merupakan jenis platform media sosial populer adalah...", opts: ["WhatsApp, Facebook, Instagram", "Chrome, Firefox, Safari", "Windows, MacOS, Linux", "Photoshop, Corel, Canva"] },
-            { q: "Apa salah satu manfaat positif dari penggunaan media sosial?", opts: ["Mempercepat komunikasi dan berbagi informasi", "Menghabiskan waktu luang", "Memperbanyak kuota internet", "Melihat foto orang lain saja"] },
-            { q: "Salah satu dampak negatif dari media sosial jika tidak digunakan dengan bijak adalah...", opts: ["Penyebaran berita bohong (Hoax)", "Memudahkan mencari materi belajar", "Mendapatkan banyak teman", "Media promosi gratis"] }
+            { q: "AI atau Kecerdasan Buatan adalah teknologi yang membuat komputer atau mesin bisa berpikir dan belajar seperti manusia.", opts: ["Benar", "Salah", "Kurang Tepat"], key: "Benar" },
+            { q: "Articial Intelligents adalah kepanjangan dari AI.", opts: ["Benar", "Salah", "Kurang Tepat"], key: "Salah" },
+            { q: "TIK fokus pada pengembangan teknologi, sedangkan Informatika fokus pada penggunaan teknologi.", opts: ["Benar", "Salah", "Kurang Tepat"], key: "Benar" },
+            { q: "Information and Communication Tekhnology adalah kepanjangan dari TIK dalam bahasa inggris.", opts: ["Benar", "Salah", "Kurang Tepat"], key: "Benar" },
+            { q: "Hardware adalah semua komponen fisik komputer yang dapat dilihat dan disentuh. Hardware berfungsi sebagai alat input, output, pemroses, dan penyimpan data.", opts: ["Benar", "Salah", "Kurang Tepat"], key: "Benar" },
+            { q: "Perangkat keras jaringan yang berfungsi untuk menghubungkan beberapa komputer pada jaringan lokal (LAN) adalah...", opts: ["Router", "Switch/Hub", "Modem", "Repeater"], key: "Switch/Hub" },
+            { q: "Topologi jaringan yang menggunakan satu kabel pusat sebagai media transmisi data adalah...", opts: ["Topologi Star", "Topologi Mesh", "Topologi Bus", "Topologi Ring"], key: "Topologi Bus" },
+            { q: "Jenis kabel jaringan yang menggunakan cahaya untuk mengirimkan data dan memiliki kecepatan paling tinggi adalah...", opts: ["UTP", "Coaxial", "Fiber Optic", "STP"], key: "Fiber Optic" },
+            { q: "Alamat unik yang dimiliki oleh setiap perangkat keras agar dapat teridentifikasi dalam jaringan disebut...", opts: ["IP Address", "MAC Address", "URL", "Gateway"], key: "MAC Address" },
+            { q: "Jaringan komputer yang mencakup area satu kota atau wilayah tertentu disebut dengan...", opts: ["PAN", "LAN", "MAN", "WAN"], key: "MAN" },
+            { q: "WWW merupakan singkatan dari istilah teknologi internet yaitu...", opts: ["World Wide Web", "World Web Wide", "Web World Wide", "Wide World Web"], key: "World Wide Web" },
+            { q: "Protokol standar yang digunakan untuk mengirim pesan elektronik (email) melalui internet adalah...", opts: ["HTTP", "FTP", "SMTP", "TCP/IP"], key: "SMTP" },
+            { q: "Manakah di bawah ini yang merupakan contoh dari mesin pencari (Search Engine)?", opts: ["Google & Bing", "Chrome & Firefox", "WhatsApp & Telegram", "Facebook & Instagram"], key: "Google & Bing" },
+            { q: "Perangkat yang berfungsi untuk merubah sinyal analog menjadi digital dan sebaliknya agar komputer bisa terhubung ke internet adalah...", opts: ["Hub", "Modem", "Switch", "Router"], key: "Modem" },
+            { q: "Sistem yang dirancang untuk mencegah akses yang tidak sah atau mencurigakan masuk ke dalam jaringan pribadi disebut...", opts: ["Firewall", "Antivirus", "Spyware", "Adware"], key: "Firewall" },
+            { q: "Domain yang biasanya digunakan khusus untuk institusi pendidikan tinggi (Universitas) di Indonesia adalah...", opts: [".com", ".id", ".ac.id", ".go.id"], key: ".ac.id" },
+            { q: "Browser web populer yang dikembangkan dan dimiliki oleh perusahaan Google adalah...", opts: ["Safari", "Opera", "Microsoft Edge", "Google Chrome"], key: "Google Chrome" },
+            { q: "Satuan untuk mengukur kecepatan transfer data dalam sebuah jaringan internet adalah...", opts: ["Hertz (Hz)", "Byte (B)", "Bits per second (bps)", "Watt (W)"], key: "Bits per second (bps)" },
+            { q: "Upaya penipuan untuk mendapatkan informasi data pribadi seperti password dan kartu kredit dengan menyamar sebagai institusi resmi melalui email/link palsu disebut...", opts: ["Hacking", "Phishing", "Spamming", "Cracking"], key: "Phishing" },
+            { q: "Perangkat lunak berbahaya yang dirancang untuk merusak, mengganggu, atau mencuri data dari sistem komputer disebut...", opts: ["Software", "Firmware", "Malware", "Hardware"], key: "Malware" },
+            { q: "Manakah di bawah ini yang merupakan perangkat keras keluaran (Output Device)?", opts: ["Scanner", "Monitor", "Keyboard", "Mouse"], key: "Monitor" },
+            { q: "Unit pada komputer yang sering disebut sebagai 'Otak Komputer' karena fungsinya sebagai pusat pemrosesan adalah...", opts: ["Hardisk", "RAM", "CPU", "Power Supply"], key: "CPU" },
+            { q: "Apa fungsi utama dari Sistem Operasi (Operating System) pada komputer?", opts: ["Mengelola hardware & software", "Membuat desain grafis", "Menyusun tabel data", "Mengedit video"], key: "Mengelola hardware & software" },
+            { q: "File dengan ekstensi '.docx' merupakan format dokumen yang biasanya dibuat menggunakan aplikasi...", opts: ["Ms. Excel", "Ms. PowerPoint", "Ms. Word", "Ms. Access"], key: "Ms. Word" },
+            { q: "Teknologi nirkabel jarak pendek yang umum digunakan untuk mentransfer file antar perangkat seluler adalah...", opts: ["Infrared", "Bluetooth", "Fiber Optic", "Broadband"], key: "Bluetooth" },
+            { q: "Materi dasar yang pertama kali dipelajari mengenai teknologi informasi adalah...", opts: ["Pengenalan Informatika", "Sistem Database", "Kriptografi", "Robotika"], key: "Pengenalan Informatika" },
+            { q: "Mengapa kita perlu belajar Informatika di sekolah?", opts: ["Agar bisa main game saja", "Mempersiapkan skill digital masa depan", "Hanya untuk syarat kelulusan", "Agar bisa merakit PC sendiri"], key: "Mempersiapkan skill digital masa depan" },
+            { q: "Tiga komponen utama dalam Teknologi Informasi dan Komunikasi (TIK) adalah...", opts: ["Hardware, Software, Brainware", "Monitor, Mouse, Keyboard", "Google, Yahoo, Bing", "Excel, Word, PowerPoint"], key: "Hardware, Software, Brainware" },
+            { q: "Internet sebagai jaringan global yang kita kenal sekarang, awal cikal bakalnya ditemukan pada tahun...", opts: ["1945", "1969 (ARPANET)", "1998", "2010"], key: "1969 (ARPANET)" },
+            { q: "Apa perbedaan utama antara jaringan lokal (LAN) dengan internet?", opts: ["LAN menggunakan kabel, internet tidak", "Internet cakupannya global, LAN terbatas area kecil", "LAN lebih lambat dari internet", "Internet hanya untuk media sosial"], key: "Internet cakupannya global, LAN terbatas area kecil" },
+            { q: "Apakah kepanjangan dari istilah jaringan LAN?", opts: ["Local Area Network", "Link Area Node", "Light Access Net", "Large Area Network"], key: "Local Area Network" },
+            { q: "Manakah yang merupakan kumpulan topologi jaringan komputer?", opts: ["Bus, Star, Ring, Mesh", "Keyboard, Mouse, Monitor", "Windows, Linux, Android", "Word, Excel, Access"], key: "Bus, Star, Ring, Mesh" },
+            { q: "Di bawah ini yang merupakan jenis platform media sosial populer adalah...", opts: ["WhatsApp, Facebook, Instagram", "Chrome, Firefox, Safari", "Windows, MacOS, Linux", "Photoshop, Corel, Canva"], key: "WhatsApp, Facebook, Instagram" },
+            { q: "Apa salah satu manfaat positif dari penggunaan media sosial?", opts: ["Mempercepat komunikasi dan berbagi informasi", "Menghabiskan waktu luang", "Memperbanyak kuota internet", "Melihat foto orang lain saja"], key: "Mempercepat komunikasi dan berbagi informasi" },
+            { q: "Salah satu dampak negatif dari media sosial jika tidak digunakan dengan bijak adalah...", opts: ["Penyebaran berita bohong (Hoax)", "Memudahkan mencari materi belajar", "Mendapatkan banyak teman", "Media promosi gratis"], key: "Penyebaran berita bohong (Hoax)" },
+            // 5 SOAL PG TAMBAHAN (Total 40)
+            { q: "Proses mengubah data menjadi kode rahasia agar tidak mudah dibaca oleh pihak yang tidak berwenang disebut...", opts: ["Enkripsi", "Deskripsi", "Kompresi", "Instalasi"], key: "Enkripsi" },
+            { q: "Manakah yang merupakan media penyimpanan data permanen dengan kecepatan akses paling cepat saat ini?", opts: ["Hardisk Drive (HDD)", "Solid State Drive (SSD)", "Flashdisk", "Floppy Disk"], key: "Solid State Drive (SSD)" },
+            { q: "Dalam pemrograman, tempat untuk menyimpan nilai data yang dapat berubah-ubah selama program dijalankan disebut...", opts: ["Konstanta", "Variabel", "Looping", "Function"], key: "Variabel" },
+            { q: "Etika dan tanggung jawab dalam menggunakan teknologi informasi secara bijak dikenal dengan istilah...", opts: ["Digital Citizenship", "Cyber Crime", "Social Media Admin", "IT Support"], key: "Digital Citizenship" },
+            { q: "Teknologi yang memungkinkan pengolahan data dalam skala yang sangat besar dan kompleks disebut...", opts: ["Small Data", "Big Data", "Manual Data", "Paper Data"], key: "Big Data" }
         ];
 
-        // 5 Soal Essay Sisa
         const questionsB = [
             "Jelaskan secara singkat apa yang dimaksud dengan Cloud Computing!",
             "Sebutkan 2 contoh perangkat input (masukan) pada komputer!",
@@ -176,124 +89,400 @@
             "Tuliskan langkah-langkah sederhana mengirim file menggunakan layanan Google Drive!"
         ];
 
-        // Initialize Section A
-        const containerA = document.getElementById('section-a-container');
-        questionsA.forEach((item, idx) => {
-            const div = document.createElement('div');
-            div.className = "p-4 rounded-xl border border-slate-100 bg-white shadow-sm";
-            const gridCols = item.opts.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2";
-            div.innerHTML = `
-                <p class="font-semibold text-slate-800 mb-3">${idx + 1}. ${item.q}</p>
-                <div class="grid grid-cols-1 ${gridCols} gap-3">
-                    ${item.opts.map(opt => `
-                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50 transition-colors border-slate-200 group">
-                            <input type="radio" name="q_a_${idx}" value="${opt}" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-                            <span class="ml-3 text-sm text-slate-700 group-hover:text-blue-700">${opt}</span>
-                        </label>
-                    `).join('')}
-                </div>
-            `;
-            containerA.appendChild(div);
-        });
+        // --- APP STATE ---
+        let currentView = 'exam';
+        let currentUser = null;
+        let tabSwitchCount = 0;
+        let studentName = "";
+        let studentClass = "XII A";
+        let submissions = [];
+        let selectedSubmission = null;
+        let isAuthReady = false;
 
-        // Initialize Section B
-        const containerB = document.getElementById('section-b-container');
-        questionsB.forEach((q, idx) => {
-            const div = document.createElement('div');
-            div.className = "space-y-2";
-            div.innerHTML = `
-                <label class="block font-semibold text-slate-800">${idx + 1}. ${q}</label>
-                <textarea id="q_b_${idx}" rows="2" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Ketik jawaban Anda di sini..."></textarea>
-            `;
-            containerB.appendChild(div);
-        });
+        // --- AUTH INIT ---
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                onAuthStateChanged(auth, (user) => {
+                    currentUser = user;
+                    isAuthReady = true;
+                    render();
+                });
+            } catch (error) {
+                console.error("Auth Error:", error);
+            }
+        };
+        initAuth();
 
-        // Deteksi Pindah Tab (Visibility API)
-        document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === "hidden" && !isExamFinished) {
+        // --- LOGIC FUNCTIONS ---
+        window.onblur = () => {
+            if (currentView === 'exam' && isAuthReady) {
                 tabSwitchCount++;
-            } else if (document.visibilityState === "visible" && !isExamFinished && tabSwitchCount > 0) {
-                showWarning(`PERINGATAN: Anda terdeteksi meninggalkan halaman ujian! Jangan membuka tab lain selama ujian berlangsung. (Pelanggaran: ${tabSwitchCount} kali)`, "Pelanggaran!");
+                alert(`PERINGATAN: Anda meninggalkan halaman ujian! (Total Pelanggaran: ${tabSwitchCount})`);
             }
-        });
+        };
 
-        function showWarning(msg, title = "Belum Lengkap!") {
-            document.getElementById('warning-title').textContent = title;
-            document.getElementById('warning-message').textContent = msg;
-            document.getElementById('modal-warning').classList.remove('hidden');
-        }
-
-        function closeWarning() {
-            document.getElementById('modal-warning').classList.add('hidden');
-        }
-
-        function submitExam() {
-            const name = document.getElementById('student-name').value.trim();
+        const calculateScore = (answersA, essayScore = 0) => {
+            let correctCount = 0;
+            answersA.forEach((ans, i) => {
+                if (ans === questionsA[i].key) correctCount++;
+            });
             
-            // 1. Validasi Nama
-            if (!name) {
-                showWarning("Mohon lengkapi Nama Anda sebelum mengirim jawaban.");
-                document.getElementById('student-name').focus();
-                return;
-            }
-
-            // 2. Validasi Jawaban Bagian A
-            let unansweredA = [];
-            questionsA.forEach((_, idx) => {
-                const selected = document.querySelector(`input[name="q_a_${idx}"]:checked`);
-                if (!selected) unansweredA.push(idx + 1);
-            });
-
-            if (unansweredA.length > 0) {
-                showWarning(`Anda belum menjawab soal Pilihan Ganda nomor: ${unansweredA.slice(0, 5).join(", ")}${unansweredA.length > 5 ? '...' : ''}`);
-                return;
-            }
-
-            // 3. Validasi Jawaban Bagian B
-            let unansweredB = [];
-            questionsB.forEach((_, idx) => {
-                const ans = document.getElementById(`q_b_${idx}`).value.trim();
-                if (!ans) unansweredB.push(idx + 1);
-            });
-
-            if (unansweredB.length > 0) {
-                showWarning(`Anda belum menjawab soal Essay nomor: ${unansweredB.join(", ")}`);
-                return;
-            }
-
-            // Jika semua valid, kunci status ujian
-            isExamFinished = true;
-
-            const className = document.getElementById('student-class').value;
-            let resultText = `HASIL UJIAN SEKOLAH INFORMATIKA\n===============================\nNama   : ${name}\nKelas  : ${className}\nTanggal: ${new Date().toLocaleString('id-ID')}\n===============================\nSTATUS KECURANGAN:\nPindah Tab: ${tabSwitchCount} kali\n===============================\n\nBAGIAN A (PG & CEKLIS):\n`;
+            // PG: 40 soal x 2 poin = 80 poin
+            const pgScore = correctCount * 2;
             
-            questionsA.forEach((item, idx) => {
-                const selected = document.querySelector(`input[name="q_a_${idx}"]:checked`);
-                resultText += `${idx + 1}. ${selected.value}\n`;
-            });
-            resultText += `\nBAGIAN B (ESSAY):\n`;
-            questionsB.forEach((q, idx) => {
-                const ans = document.getElementById(`q_b_${idx}`).value;
-                resultText += `${idx + 1}. ${ans}\n`;
-            });
-            document.getElementById('summary-text').textContent = resultText;
-            document.getElementById('modal-result').classList.remove('hidden');
-        }
+            // Essay: Max 20 poin
+            const rawScore = pgScore + parseFloat(essayScore); 
+            
+            // Konversi ke Skala 10 - 98
+            // Formula: ((Raw/100) * (98 - 10)) + 10
+            const finalScore = Math.round((rawScore / 100) * 88 + 10);
+            
+            let grade = 'D';
+            if (finalScore >= 90) grade = 'A';
+            else if (finalScore >= 80) grade = 'B';
+            else if (finalScore >= 70) grade = 'C';
 
-        function copyToClipboard() {
-            const text = document.getElementById('summary-text').textContent;
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            alert("Jawaban berhasil disalin!");
-            document.body.removeChild(textArea);
-        }
+            return { score: finalScore, grade, correct: correctCount, raw: rawScore };
+        };
 
-        function closeModal() {
-            document.getElementById('modal-result').classList.add('hidden');
-        }
+        const saveToFirestore = async (data) => {
+            if (!currentUser) return;
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'submissions', currentUser.uid);
+            await setDoc(docRef, {
+                ...data,
+                uid: currentUser.uid,
+                timestamp: new Date().toISOString(),
+                graded: false,
+                essayScore: 0
+            });
+        };
+
+        const fetchSubmissions = async () => {
+            if (!currentUser) return;
+            try {
+                const querySnapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'submissions'));
+                submissions = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                render();
+            } catch (err) {
+                console.error("Fetch Error:", err);
+            }
+        };
+
+        const updateEssayScore = async (id, newEssayScore) => {
+            if (!currentUser) return;
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'submissions', id);
+            await updateDoc(docRef, {
+                essayScore: parseFloat(newEssayScore),
+                graded: true
+            });
+            fetchSubmissions();
+            selectedSubmission = null;
+        };
+
+        // --- RENDERER ---
+        const render = () => {
+            const root = document.getElementById('app');
+            if (!isAuthReady) return;
+
+            if (currentView === 'exam') {
+                root.innerHTML = renderExam();
+            } else if (currentView === 'finished') {
+                root.innerHTML = renderFinished();
+            } else if (currentView === 'admin_login') {
+                root.innerHTML = renderAdminLogin();
+            } else if (currentView === 'admin_dashboard') {
+                root.innerHTML = renderAdminDashboard();
+            }
+        };
+
+        const renderExam = () => `
+            <header class="bg-blue-900 text-white py-8 px-4 shadow-lg mb-8 relative">
+                <button onclick="window.setView('admin_login')" class="absolute top-2 right-2 text-[8px] opacity-20 hover:opacity-100">ADMIN</button>
+                <div class="max-w-4xl mx-auto text-center">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaC7zNuBILaC544879xnoWvGCnxA9Fc83PCg&s" class="h-20 mx-auto mb-4 rounded-lg shadow-lg">
+                    <h2 class="text-xs font-semibold uppercase opacity-70 tracking-widest">Pemerintah Provinsi Sulawesi Selatan</h2>
+                    <h1 class="text-xl md:text-2xl font-bold mt-1">SMAS TAHFIDZ AL-QURAN WAHDAH ISLAMIYAH ANABANUA</h1>
+                    <p class="text-sm mt-2 opacity-80 italic">Ujian Sekolah Mata Pelajaran: Informatika</p>
+                </div>
+            </header>
+
+            <main class="max-w-4xl mx-auto px-4 pb-20">
+                <section class="glass-card p-6 rounded-2xl mb-6 border-l-4 border-blue-500">
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm">01</span>
+                        Identitas Peserta
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="input-name" placeholder="Nama Lengkap *" class="p-3 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="input-class" class="p-3 border rounded-lg outline-none">
+                            <option>XII A</option>
+                            <option>XII B</option>
+                        </select>
+                    </div>
+                </section>
+
+                <section class="glass-card p-6 rounded-2xl mb-6">
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm">A</span>
+                        Pilihan Ganda & Ceklis (PG: 80 Poin)
+                    </h3>
+                    <div class="space-y-6">
+                        ${questionsA.map((q, i) => `
+                            <div class="p-4 border-b border-slate-100 last:border-0">
+                                <p class="font-semibold text-slate-700 mb-3">${i+1}. ${q.q}</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                    ${q.opts.map(opt => `
+                                        <label class="flex items-center p-3 border rounded-xl hover:bg-slate-50 cursor-pointer transition-all">
+                                            <input type="radio" name="qa_${i}" value="${opt}" class="w-4 h-4 text-blue-600">
+                                            <span class="ml-3 text-sm">${opt}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+
+                <section class="glass-card p-6 rounded-2xl mb-10">
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm">B</span>
+                        Essay (Essay: 20 Poin)
+                    </h3>
+                    <div class="space-y-6">
+                        ${questionsB.map((q, i) => `
+                            <div>
+                                <p class="font-semibold text-slate-700 mb-2">${i+1}. ${q}</p>
+                                <textarea id="qb_${i}" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Tulis jawaban Anda..."></textarea>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+
+                <button onclick="window.handleFinish()" class="w-full bg-green-600 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-green-700 transition-all transform active:scale-95">
+                    SELESAI & KIRIM JAWABAN
+                </button>
+            </main>
+        `;
+
+        const renderFinished = () => `
+            <div class="min-h-screen flex items-center justify-center p-4">
+                <div class="glass-card p-10 rounded-3xl text-center max-w-md w-full shadow-2xl">
+                    <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800">Ujian Terkirim!</h2>
+                    <p class="text-slate-600 mt-3">Alhamdulillah, <b>${studentName}</b>. Jawaban Anda telah tersimpan di server.</p>
+                    <div class="mt-6 p-4 bg-orange-50 rounded-xl text-left text-sm text-orange-800 border border-orange-200">
+                        <p><b>Catatan Pelanggaran:</b> ${tabSwitchCount} kali pindah layar.</p>
+                    </div>
+                    <button onclick="location.reload()" class="mt-8 text-blue-600 font-semibold hover:underline">Halaman Utama</button>
+                </div>
+            </div>
+        `;
+
+        const renderAdminLogin = () => `
+            <div class="min-h-screen flex items-center justify-center p-4 bg-slate-100 font-sans">
+                <div class="glass-card p-8 rounded-2xl w-full max-w-sm text-center shadow-xl">
+                    <h2 class="text-xl font-bold mb-4">Akses Guru</h2>
+                    <input type="password" id="admin-pass" class="w-full p-3 border rounded-lg mb-4 text-center" placeholder="Password Admin">
+                    <button onclick="window.doAdminLogin()" class="w-full bg-slate-800 text-white p-3 rounded-lg font-bold">Masuk</button>
+                    <button onclick="window.setView('exam')" class="mt-4 text-xs text-slate-400">Kembali</button>
+                </div>
+            </div>
+        `;
+
+        const renderAdminDashboard = () => `
+            <div class="p-4 md:p-8 max-w-7xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-800">Dashboard Hasil Ujian</h1>
+                        <p class="text-slate-500 text-sm">SMAS Tahfidz Al-Quran | PG: 80, Essay: 20 | Skala 10-98</p>
+                    </div>
+                    <button onclick="window.setView('exam')" class="bg-white border px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:bg-slate-50 transition-colors">Keluar Dashboard</button>
+                </div>
+
+                <div class="glass-card rounded-2xl overflow-hidden shadow-sm overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
+                            <tr>
+                                <th class="px-6 py-4">Nama Siswa</th>
+                                <th class="px-6 py-4">Kecurangan</th>
+                                <th class="px-6 py-4">PG Benar</th>
+                                <th class="px-6 py-4">Skor (10-98)</th>
+                                <th class="px-6 py-4">Predikat</th>
+                                <th class="px-6 py-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-sm">
+                            ${submissions.length === 0 ? '<tr><td colspan="6" class="px-6 py-10 text-center text-slate-400 italic">Belum ada data masuk.</td></tr>' : ''}
+                            ${submissions.map(s => {
+                                const result = calculateScore(s.answersA, s.essayScore || 0);
+                                return `
+                                <tr class="hover:bg-blue-50/30 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <p class="font-bold text-slate-800">${s.name}</p>
+                                        <p class="text-[10px] text-slate-400">${s.class}</p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] ${s.tabSwitches > 0 ? 'bg-red-100 text-red-700 font-bold' : 'bg-green-100 text-green-700'}">
+                                            ${s.tabSwitches}x Pindah
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 font-medium">${result.correct} / 40</td>
+                                    <td class="px-6 py-4">
+                                        <span class="text-lg font-bold text-blue-700">${result.score}</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="font-bold ${result.grade === 'A' ? 'text-green-600' : result.grade === 'B' ? 'text-blue-500' : 'text-orange-500'}">
+                                            Grade ${result.grade}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <button onclick="window.inspectSubmission('${s.id}')" class="text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-600 px-4 py-1.5 rounded-lg text-xs font-bold transition-all">
+                                            ${s.graded ? 'Edit Nilai' : 'Periksa'}
+                                        </button>
+                                    </td>
+                                </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                ${selectedSubmission ? renderInspector() : ''}
+            </div>
+        `;
+
+        const renderInspector = () => {
+            const result = calculateScore(selectedSubmission.answersA, selectedSubmission.essayScore || 0);
+            return `
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                <div class="bg-white rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+                    <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+                        <div>
+                            <h2 class="text-xl font-bold">${selectedSubmission.name}</h2>
+                            <p class="text-xs text-slate-500 italic">Total Skor Saat Ini: ${result.score} (PG: ${result.correct*2}/80 | Essay: ${selectedSubmission.essayScore}/20)</p>
+                        </div>
+                        <button onclick="window.closeInspector()" class="p-2 hover:bg-slate-200 rounded-full transition-all">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">Hasil Pilihan Ganda</h3>
+                            <div class="space-y-2 h-[400px] overflow-y-auto pr-2 text-[11px]">
+                                ${selectedSubmission.answersA.map((ans, i) => {
+                                    const isCorrect = ans === questionsA[i].key;
+                                    return `
+                                        <div class="p-2 border rounded-lg ${isCorrect ? 'bg-green-50' : 'bg-red-50'}">
+                                            <p><b>${i+1}.</b> ${questionsA[i].q}</p>
+                                            <p class="mt-1">Siswa: <span class="font-bold">${ans}</span> ${!isCorrect ? `<span class="text-slate-400"> (Kunci: ${questionsA[i].key})</span>` : ''}</p>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                            <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">Penilaian Essay Manual</h3>
+                            <div class="space-y-4 text-xs">
+                                ${questionsB.map((q, i) => `
+                                    <div class="bg-white p-3 rounded-lg shadow-sm border border-slate-100">
+                                        <p class="font-semibold text-slate-600">${i+1}. ${q}</p>
+                                        <p class="mt-1 italic text-slate-800 bg-slate-50 p-2 rounded">${selectedSubmission.answersB[i] || '(Kosong)'}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+
+                            <div class="mt-8 pt-6 border-t bg-white p-4 rounded-xl border-dashed border-2 border-blue-200">
+                                <label class="block text-xs font-bold mb-2 uppercase tracking-wider text-blue-600">Skor Total Essay (0 - 20):</label>
+                                <p class="text-[10px] text-slate-400 mb-3 italic">* Siswa menjawab salah tetap diberi minimal 1 poin/soal sebagai apresiasi usaha.</p>
+                                <input type="number" id="essay-score-input" value="${selectedSubmission.essayScore || 0}" min="0" max="20" class="w-full p-3 border rounded-xl mb-4 text-center text-3xl font-bold text-blue-700 outline-none focus:ring-2 focus:ring-blue-500">
+                                <button onclick="window.saveGrading('${selectedSubmission.id}')" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-700 transition-all">SIMPAN & UPDATE NILAI</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+        };
+
+        // --- GLOBAL ACTIONS ---
+        window.setView = (view) => {
+            if (!isAuthReady) return;
+            currentView = view;
+            if (view === 'admin_dashboard') fetchSubmissions();
+            else render();
+        };
+
+        window.doAdminLogin = () => {
+            const pass = document.getElementById('admin-pass').value;
+            if (pass === 'admin123') { 
+                window.setView('admin_dashboard');
+            } else {
+                alert("Password Salah!");
+            }
+        };
+
+        window.handleFinish = async () => {
+            if (!isAuthReady) return;
+            studentName = document.getElementById('input-name').value.trim();
+            studentClass = document.getElementById('input-class').value;
+
+            if (!studentName) return alert("Mohon lengkapi Nama Anda!");
+
+            const answersA = [];
+            for (let i = 0; i < questionsA.length; i++) {
+                const sel = document.querySelector(`input[name="qa_${i}"]:checked`);
+                if (!sel) return alert(`Soal PG nomor ${i+1} belum dijawab!`);
+                answersA.push(sel.value);
+            }
+
+            const answersB = [];
+            for (let i = 0; i < questionsB.length; i++) {
+                const val = document.getElementById(`qb_${i}`).value.trim();
+                if (!val) return alert(`Soal Essay nomor ${i+1} belum dijawab!`);
+                answersB.push(val);
+            }
+
+            try {
+                await saveToFirestore({
+                    name: studentName,
+                    class: studentClass,
+                    tabSwitches: tabSwitchCount,
+                    answersA,
+                    answersB
+                });
+                window.setView('finished');
+            } catch (err) {
+                alert("Gagal mengirim. Periksa internet Anda.");
+            }
+        };
+
+        window.inspectSubmission = (id) => {
+            selectedSubmission = submissions.find(s => s.id === id);
+            render();
+        };
+
+        window.closeInspector = () => {
+            selectedSubmission = null;
+            render();
+        };
+
+        window.saveGrading = async (id) => {
+            const score = document.getElementById('essay-score-input').value;
+            if (score < 0 || score > 20) return alert("Skor essay maksimal 20.");
+            await updateEssayScore(id, score);
+            alert("Nilai akhir berhasil diperbarui!");
+        };
+
+        render();
     </script>
 </body>
 </html>
