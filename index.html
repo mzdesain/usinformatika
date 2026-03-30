@@ -7,41 +7,29 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .glass-card {
-            background: #ffffff;
-            border: 1px solid #f1f5f9;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        .minimal-border { border: 1px solid #f1f5f9; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         .animate-save { animation: blink 1s ease-in-out; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-white min-h-screen text-slate-800 leading-relaxed">
+<body class="bg-white min-h-screen text-slate-800">
 
     <div id="app">
-        <!-- Loader Area -->
+        <!-- Loader Awal -->
         <div id="loader" class="flex items-center justify-center min-h-screen text-center flex-col p-6">
-            <div id="spinner" class="w-8 h-8 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-            <p id="loader-text" class="text-slate-400 text-xs tracking-widest uppercase">Menghubungkan...</p>
-            
-            <div id="setup-guide" class="hidden mt-6 p-6 bg-white rounded-xl border border-slate-100 max-w-sm shadow-sm text-left">
-                <h3 class="text-sm font-bold text-slate-800 mb-2 uppercase">Config Missing</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Pastikan Firebase Config Anda sudah benar di dalam kode file HTML ini agar sistem database aktif.</p>
-            </div>
+            <div class="w-6 h-6 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+            <p class="text-slate-400 text-[10px] tracking-[0.2em] uppercase font-bold">Menginisialisasi...</p>
         </div>
     </div>
 
     <!-- Modal Warning Minimalis -->
     <div id="modal-warning" class="fixed inset-0 bg-slate-900/10 backdrop-blur-sm hidden flex items-center justify-center p-4 z-[100]">
-        <div class="bg-white rounded-xl max-w-sm w-full p-6 border border-slate-200 text-center transform transition-all shadow-sm">
-            <h3 id="warning-title" class="text-sm font-bold text-slate-900 mb-2 uppercase tracking-widest">Sistem</h3>
-            <p id="warning-message" class="text-slate-500 mb-6 text-xs leading-relaxed"></p>
+        <div class="bg-white rounded-xl max-w-sm w-full p-6 border border-slate-200 text-center shadow-sm transform transition-all">
+            <h3 id="warning-title" class="text-xs font-bold text-slate-900 mb-2 uppercase tracking-widest">Informasi</h3>
+            <p id="warning-message" class="text-slate-500 mb-6 text-[11px] leading-relaxed"></p>
             <button onclick="window.closeWarning()" class="w-full bg-slate-900 text-white py-2.5 rounded-lg font-bold hover:bg-black transition-all text-[10px] tracking-widest uppercase">Tutup</button>
         </div>
     </div>
@@ -49,10 +37,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- KONFIGURASI DATABASE ---
-        let firebaseConfig = {
+        // --- CONFIG FIREBASE ---
+        const firebaseConfig = {
             apiKey: "AIzaSyCdZliEF6yVmdQRNHhSRa4Z9YR1fn-CCYQ",
             authDomain: "chatting-22bb9.firebaseapp.com",
             projectId: "chatting-22bb9",
@@ -60,18 +48,11 @@
             messagingSenderId: "540910795541",
             appId: "1:540910795541:web:785aff5846eab68636c71c"
         };
-        let appId = 'ujian-informatika-001';
+        const appId = 'ujian-informatika-001';
 
-        try {
-            if (typeof __firebase_config !== 'undefined') {
-                firebaseConfig = JSON.parse(__firebase_config);
-                appId = typeof __app_id !== 'undefined' ? __app_id : 'ujian-informatika-001';
-            }
-        } catch (e) { }
-
-        const app = firebaseConfig.apiKey ? initializeApp(firebaseConfig) : null;
-        const auth = app ? getAuth(app) : null;
-        const db = app ? getFirestore(app) : null;
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
         // --- DATA SOAL ---
         const questionsA = [
@@ -130,34 +111,28 @@
         let currentUser = null;
         let tabSwitchCount = 0;
         let studentName = "";
-        let studentClass = "XII A";
         let submissions = [];
         let selectedSubmission = null;
         let isAuthReady = false;
         let lastSavedData = null;
         let autoSaveTimer = null;
         let isAdminLoading = false;
+        let unsubscribeSubmissions = null;
 
         // --- AUTH INIT ---
         const initAuth = async () => {
-            if (!auth) {
-                document.getElementById('spinner').classList.add('hidden');
-                document.getElementById('setup-guide').classList.remove('hidden');
-                return;
-            }
             try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                await signInAnonymously(auth);
                 onAuthStateChanged(auth, async (user) => {
                     currentUser = user;
                     isAuthReady = true;
                     if (user) await loadExistingDraft();
                     render();
                 });
-            } catch (error) { console.error(error); }
+            } catch (error) {
+                console.error(error);
+                window.showWarning("Gagal terhubung. Pastikan 'Anonymous Auth' aktif di Firebase.");
+            }
         };
         initAuth();
 
@@ -167,12 +142,9 @@
             document.getElementById('warning-message').textContent = msg;
             document.getElementById('modal-warning').classList.remove('hidden');
         };
+        window.closeWarning = () => { document.getElementById('modal-warning').classList.add('hidden'); };
 
-        window.closeWarning = () => {
-            document.getElementById('modal-warning').classList.add('hidden');
-        };
-
-        // --- AUTO-SAVE LOGIC ---
+        // --- DATA LOGIC ---
         const loadExistingDraft = async () => {
             if (!db || !currentUser) return;
             try {
@@ -180,24 +152,15 @@
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if (!data.finalSubmitted) {
-                        studentName = data.name || "";
-                        studentClass = data.class || "XII A";
-                        tabSwitchCount = data.tabSwitches || 0;
-                        lastSavedData = data;
-                    } else {
-                        currentView = 'finished';
-                        studentName = data.name;
-                    }
+                    if (data.finalSubmitted) { currentView = 'finished'; studentName = data.name; }
+                    else { studentName = data.name || ""; lastSavedData = data; }
                 }
             } catch (e) { }
         };
 
         window.triggerAutoSave = () => {
             if (autoSaveTimer) clearTimeout(autoSaveTimer);
-            autoSaveTimer = setTimeout(async () => {
-                await saveDraft();
-            }, 1000);
+            autoSaveTimer = setTimeout(async () => { await saveDraft(); }, 1000);
         };
 
         const saveDraft = async (isFinal = false) => {
@@ -214,7 +177,7 @@
             });
             const data = {
                 name: document.getElementById('input-name')?.value.trim() || studentName,
-                class: document.getElementById('input-class')?.value || studentClass,
+                class: document.getElementById('input-class')?.value || "XII A",
                 tabSwitches: tabSwitchCount,
                 answersA,
                 answersB,
@@ -236,46 +199,21 @@
             } catch (e) { }
         };
 
-        // --- LOGIC FUNCTIONS ---
-        window.onblur = () => {
-            if (currentView === 'exam' && isAuthReady) {
-                tabSwitchCount++;
-                saveDraft();
-                window.showWarning(`Halaman ditinggalkan. Pelanggaran: ${tabSwitchCount}x.`, "Keamanan");
-            }
-        };
-
-        const calculateScore = (answersA, essayScore = 0) => {
-            let correctCount = 0;
-            answersA.forEach((ans, i) => { if (ans === questionsA[i].key) correctCount++; });
-            const rawScore = (correctCount * 2) + parseFloat(essayScore); 
-            const finalScore = Math.round((rawScore / 100) * 88 + 10);
-            let grade = finalScore >= 90 ? 'A' : finalScore >= 80 ? 'B' : finalScore >= 70 ? 'C' : 'D';
-            return { score: finalScore, grade, correct: correctCount };
-        };
-
-        const fetchSubmissions = async () => {
+        const initSubmissionsListener = () => {
             if (!db || !currentUser) return;
+            if (unsubscribeSubmissions) unsubscribeSubmissions();
             isAdminLoading = true;
             render();
-            try {
-                const querySnapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'submissions'));
-                submissions = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } catch (err) { 
-                window.showWarning("Gagal memuat data. Periksa Rules Firebase Anda.");
-            }
-            isAdminLoading = false;
-            render();
-        };
-
-        const updateEssayScore = async (id, newEssayScore) => {
-            if (!db || !currentUser) return;
-            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'submissions', id), {
-                essayScore: parseFloat(newEssayScore),
-                graded: true
+            const q = collection(db, 'artifacts', appId, 'public', 'data', 'submissions');
+            unsubscribeSubmissions = onSnapshot(q, (snapshot) => {
+                submissions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                isAdminLoading = false;
+                render();
+            }, (err) => {
+                isAdminLoading = false;
+                render();
+                window.showWarning("Akses ditolak. Cek Firestore Rules Anda.");
             });
-            fetchSubmissions();
-            selectedSubmission = null;
         };
 
         // --- RENDERER ---
@@ -303,24 +241,24 @@
         };
 
         const renderExam = () => `
-            <header class="py-6 px-4 mb-4 border-b border-slate-100 flex justify-between items-center max-w-4xl mx-auto">
-                <div class="flex items-center space-x-3">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaC7zNuBILaC544879xnoWvGCnxA9Fc83PCg&s" class="h-8 grayscale">
-                    <h1 class="text-xs font-bold uppercase tracking-widest text-slate-800">SMAS TAHFIDZ</h1>
+            <header class="bg-white border-b border-slate-100 py-6 px-4 mb-4 relative flex justify-between items-center max-w-4xl mx-auto">
+                <div class="flex items-center space-x-2">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaC7zNuBILaC544879xnoWvGCnxA9Fc83PCg&s" class="h-6 grayscale opacity-50">
+                    <h1 class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-800">SMAS TAHFIDZ</h1>
                 </div>
-                <button onclick="window.setView('admin_login')" class="text-[9px] font-bold text-slate-300 hover:text-slate-900 uppercase tracking-widest">Admin</button>
+                <button onclick="window.setView('admin_login')" class="text-[8px] font-bold text-slate-300 hover:text-slate-900 tracking-widest uppercase">Admin</button>
             </header>
 
-            <main class="max-w-3xl mx-auto px-4 pb-32">
-                <div class="mb-10 text-center">
-                    <h2 class="text-lg font-bold text-slate-900">Ujian Sekolah: Informatika</h2>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Tahun Ajaran 2025/2026</p>
+            <main class="max-w-2xl mx-auto px-4 pb-32">
+                <div class="mb-12 text-center">
+                    <h2 class="text-base font-bold text-slate-900 tracking-tight uppercase">Ujian Sekolah Informatika</h2>
+                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Metode CBT Minimalis</p>
                 </div>
 
-                <div class="bg-slate-50 rounded-xl p-6 mb-8 border border-slate-100">
+                <div class="bg-slate-50 border border-slate-100 rounded-lg p-5 mb-8">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="input-name" oninput="window.triggerAutoSave()" placeholder="Nama Lengkap *" class="p-3 bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500 text-sm font-medium">
-                        <select id="input-class" onchange="window.triggerAutoSave()" class="p-3 bg-white border border-slate-200 rounded-lg outline-none text-sm font-medium">
+                        <input type="text" id="input-name" oninput="window.triggerAutoSave()" placeholder="Nama Lengkap *" class="p-3 bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-400 text-[13px] transition-all">
+                        <select id="input-class" onchange="window.triggerAutoSave()" class="p-3 bg-white border border-slate-200 rounded-lg outline-none text-[13px]">
                             <option>XII A</option>
                             <option>XII B</option>
                         </select>
@@ -328,15 +266,15 @@
                 </div>
 
                 <div class="space-y-4 mb-10">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Bagian A: Pilihan Ganda</p>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Bagian A</p>
                     ${questionsA.map((q, i) => `
-                        <div class="bg-white border border-slate-100 rounded-xl p-6">
-                            <p class="text-sm font-semibold text-slate-700 mb-4">${i+1}. ${q.q}</p>
+                        <div class="bg-white border border-slate-100 rounded-lg p-5">
+                            <p class="text-[13px] font-medium text-slate-700 mb-4 leading-relaxed">${i+1}. ${q.q}</p>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                                 ${q.opts.map(opt => `
-                                    <label class="flex items-center p-3 border border-slate-50 rounded-lg cursor-pointer transition-all hover:bg-slate-50">
-                                        <input type="radio" name="qa_${i}" value="${opt}" onchange="window.triggerAutoSave()" class="w-4 h-4 text-blue-600">
-                                        <span class="ml-3 text-xs font-medium text-slate-500">${opt}</span>
+                                    <label class="flex items-center p-2.5 border border-slate-100 rounded-lg cursor-pointer transition-all hover:bg-slate-50">
+                                        <input type="radio" name="qa_${i}" value="${opt}" onchange="window.triggerAutoSave()" class="w-3.5 h-3.5 text-blue-600 border-slate-200">
+                                        <span class="ml-2.5 text-[11px] font-medium text-slate-500">${opt}</span>
                                     </label>
                                 `).join('')}
                             </div>
@@ -344,94 +282,82 @@
                     `).join('')}
                 </div>
 
-                <div class="space-y-4 mb-14">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Bagian B: Essay</p>
+                <div class="space-y-4 mb-16">
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Bagian B</p>
                     ${questionsB.map((q, i) => `
-                        <div class="bg-white border border-slate-100 rounded-xl p-6">
-                            <p class="text-sm font-semibold text-slate-700 mb-3">${i+1}. ${q}</p>
-                            <textarea id="qb_${i}" oninput="window.triggerAutoSave()" class="w-full p-4 border border-slate-100 rounded-lg outline-none focus:border-blue-500 text-sm" rows="3" placeholder="Ketik jawaban..."></textarea>
+                        <div class="bg-white border border-slate-100 rounded-lg p-5">
+                            <p class="text-[13px] font-medium text-slate-700 mb-3">${i+1}. ${q}</p>
+                            <textarea id="qb_${i}" oninput="window.triggerAutoSave()" class="w-full p-4 border border-slate-100 rounded-lg outline-none focus:border-blue-400 text-[13px] transition-all" rows="3" placeholder="Jawaban..."></textarea>
                         </div>
                     `).join('')}
                 </div>
 
-                <button onclick="window.handleFinish()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-black transition-all active:scale-[0.98] text-xs uppercase tracking-widest">
+                <button onclick="window.handleFinish()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-lg hover:bg-black transition-all active:scale-[0.99] text-[11px] uppercase tracking-widest">
                     Kirim Jawaban
                 </button>
             </main>
 
-            <div id="save-indicator" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white px-4 py-2 rounded-full border border-slate-100 hidden items-center space-x-2 z-50 shadow-sm">
-                <div class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Tersimpan</span>
-            </div>
-        `;
-
-        const renderFinished = () => `
-            <div class="min-h-screen flex items-center justify-center p-6 text-center">
-                <div class="max-w-sm w-full">
-                    <div class="w-12 h-12 bg-slate-100 text-slate-900 rounded-xl flex items-center justify-center mx-auto mb-6">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    </div>
-                    <h2 class="text-lg font-bold text-slate-900 mb-2 uppercase tracking-tight">Selesai</h2>
-                    <p class="text-xs text-slate-400 mb-8 font-medium">Terima kasih, <b>${studentName}</b>. Data Anda sudah tersimpan aman.</p>
-                    <button onclick="location.reload()" class="w-full bg-slate-900 text-white py-3 rounded-lg font-bold text-[10px] uppercase tracking-widest hover:bg-black transition-all">Selesai</button>
-                </div>
+            <div id="save-indicator" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white px-4 py-2 rounded-full border border-slate-100 hidden items-center space-x-2 z-50">
+                <div class="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
+                <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Sinkron...</span>
             </div>
         `;
 
         const renderAdminLogin = () => `
             <div class="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-                <div class="bg-white border border-slate-200 p-8 rounded-xl w-full max-w-sm text-center">
-                    <h2 class="text-xs font-bold text-slate-400 mb-8 uppercase tracking-[0.3em]">Login Monitor</h2>
-                    <input type="password" id="admin-pass" class="w-full p-3 border border-slate-200 rounded-lg mb-4 text-center font-bold outline-none focus:border-blue-500" placeholder="KATA SANDI">
+                <div class="bg-white border border-slate-200 p-8 rounded-lg w-full max-w-xs text-center">
+                    <h2 class="text-[10px] font-bold text-slate-400 mb-8 uppercase tracking-[0.3em]">Login Monitor</h2>
+                    <input type="password" id="admin-pass" class="w-full p-3 border border-slate-200 rounded-lg mb-4 text-center font-bold outline-none focus:border-blue-400" placeholder="KATA SANDI">
                     <button onclick="window.doAdminLogin()" class="w-full bg-slate-900 text-white py-3 rounded-lg font-bold text-[10px] tracking-widest uppercase hover:bg-black transition-all">Masuk</button>
                     <button onclick="window.setView('exam')" class="mt-8 text-[9px] text-slate-300 hover:text-slate-500 font-bold uppercase transition-colors tracking-widest">Batal</button>
                 </div>
             </div>
         `;
 
-        const renderAdminDashboard = () => `
-            <div class="p-6 md:p-12 max-w-5xl mx-auto">
-                <div class="flex justify-between items-center mb-12">
+        const renderAdminDashboard = () => {
+            return `
+            <div class="p-6 md:p-12 max-w-4xl mx-auto">
+                <div class="flex justify-between items-center mb-10 pb-6 border-b border-slate-100">
                     <div>
-                        <h1 class="text-sm font-bold text-slate-400 uppercase tracking-[0.3em]">Monitor Ujian</h1>
-                        <p class="text-lg font-bold text-slate-800 mt-1">XII Informatika</p>
+                        <h1 class="text-xs font-bold text-slate-400 uppercase tracking-[0.3em]">Monitor Ujian</h1>
+                        <p class="text-base font-bold text-slate-800 mt-1">XII Informatika</p>
                     </div>
-                    <button onclick="window.setView('exam')" class="bg-white border border-slate-200 px-5 py-2 rounded-lg text-[9px] font-bold hover:bg-slate-50 text-slate-400 tracking-widest uppercase transition-all">Keluar</button>
+                    <button onclick="window.setView('exam')" class="bg-white border border-slate-200 px-5 py-2 rounded-lg text-[9px] font-bold hover:bg-slate-50 text-slate-400 tracking-widest uppercase">Keluar</button>
                 </div>
 
-                <div class="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm">
+                <div class="bg-white border border-slate-100 rounded-lg overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
                             <thead class="bg-slate-50 text-slate-400 text-[9px] uppercase tracking-widest font-bold">
                                 <tr>
-                                    <th class="px-8 py-4">Siswa</th>
-                                    <th class="px-8 py-4">Status</th>
-                                    <th class="px-8 py-4">Masalah</th>
-                                    <th class="px-8 py-4 text-right">Aksi</th>
+                                    <th class="px-6 py-4">Siswa</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4">Masalah</th>
+                                    <th class="px-6 py-4 text-right">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-50 text-[12px]">
-                                ${isAdminLoading ? '<tr><td colspan="4" class="px-8 py-12 text-center text-blue-500 font-bold italic animate-pulse">Memperbarui data dari server...</td></tr>' : ''}
-                                ${!isAdminLoading && submissions.length === 0 ? '<tr><td colspan="4" class="px-8 py-12 text-center text-slate-300 italic">Belum ada data masuk.</td></tr>' : ''}
+                            <tbody class="divide-y divide-slate-50 text-[12px] font-medium">
+                                ${isAdminLoading ? '<tr><td colspan="4" class="px-8 py-20 text-center text-blue-500 font-bold italic animate-pulse tracking-widest uppercase text-[10px]">Memperbarui data...</td></tr>' : ''}
+                                ${!isAdminLoading && submissions.length === 0 ? '<tr><td colspan="4" class="px-8 py-20 text-center text-slate-300 italic">Belum ada siswa yang mengisi.</td></tr>' : ''}
                                 ${submissions.map(s => {
-                                    const result = calculateScore(s.answersA, s.essayScore || 0);
+                                    const res = calculateScore(s.answersA, s.essayScore || 0);
                                     return `
-                                    <tr class="hover:bg-slate-50/50 transition-colors">
-                                        <td class="px-8 py-5">
-                                            <p class="font-bold text-slate-800">${s.name || 'Anonim'}</p>
+                                    <tr class="hover:bg-slate-50/50">
+                                        <td class="px-6 py-5">
+                                            <p class="font-bold text-slate-800 text-[13px]">${s.name || 'Anonim'}</p>
                                             <p class="text-[9px] text-slate-300 font-bold uppercase">${s.class}</p>
                                         </td>
-                                        <td class="px-8 py-5">
-                                            <span class="text-[9px] font-bold px-2 py-0.5 rounded ${s.finalSubmitted ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'} uppercase tracking-widest border border-current">
-                                                ${s.finalSubmitted ? 'Done' : 'Live'}
+                                        <td class="px-6 py-5">
+                                            <span class="text-[8px] font-bold px-2 py-0.5 rounded border ${s.finalSubmitted ? 'bg-green-50 text-green-600 border-green-200' : 'bg-blue-50 text-blue-600 border-blue-200'} uppercase tracking-widest">
+                                                ${s.finalSubmitted ? 'SELESAI' : 'AKTIF'}
                                             </span>
-                                            <span class="text-[10px] font-bold text-slate-400 ml-2">S: ${result.score}</span>
+                                            <span class="text-[10px] font-bold text-slate-400 ml-2">Skor: ${res.score}</span>
                                         </td>
-                                        <td class="px-8 py-5">
+                                        <td class="px-6 py-5">
                                             <span class="font-bold text-[10px] ${s.tabSwitches > 0 ? 'text-red-400' : 'text-slate-200'} uppercase tracking-widest">${s.tabSwitches}x Tab</span>
                                         </td>
-                                        <td class="px-8 py-5 text-right">
-                                            <button onclick="window.inspectSubmission('${s.id}')" class="text-slate-400 hover:text-slate-900 px-3 py-1 rounded text-[9px] font-bold tracking-widest uppercase border border-slate-100 hover:border-slate-300">Detail</button>
+                                        <td class="px-6 py-5 text-right">
+                                            <button onclick="window.inspectSubmission('${s.id}')" class="text-slate-400 hover:text-slate-900 px-3 py-1 rounded text-[9px] font-bold tracking-widest uppercase border border-slate-100 hover:border-slate-200 transition-all">PERIKSA</button>
                                         </td>
                                     </tr>
                                     `;
@@ -440,133 +366,125 @@
                         </table>
                     </div>
                 </div>
+                <div class="mt-12 pt-8 border-t border-slate-50 text-[8px] text-slate-300 uppercase tracking-widest flex justify-between">
+                    <span>App ID: ${appId}</span>
+                    <span>Project: chatting-22bb9</span>
+                </div>
 
                 ${selectedSubmission ? renderInspector() : ''}
             </div>
-        `;
+            `;
+        };
 
         const renderInspector = () => {
-            const result = calculateScore(selectedSubmission.answersA, selectedSubmission.essayScore || 0);
+            const res = calculateScore(selectedSubmission.answersA, selectedSubmission.essayScore || 0);
             return `
-            <div class="fixed inset-0 bg-white z-50 overflow-y-auto p-4 md:p-8">
-                <div class="max-w-4xl mx-auto">
-                    <div class="flex justify-between items-center mb-10 pb-6 border-b border-slate-100">
+            <div class="fixed inset-0 bg-white z-[60] overflow-y-auto p-4 md:p-12 custom-scrollbar">
+                <div class="max-w-5xl mx-auto">
+                    <div class="flex justify-between items-start mb-12 pb-8 border-b border-slate-100">
                         <div>
-                            <h2 class="text-lg font-bold text-slate-800 uppercase tracking-tight">${selectedSubmission.name}</h2>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Skor Akhir: ${result.score} (${result.grade}) | Pindah Tab: ${selectedSubmission.tabSwitches}x</p>
+                            <div class="flex items-center space-x-2 text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-2">
+                                <span>Hasil Ujian</span>
+                                <span class="w-1 h-1 bg-slate-200 rounded-full"></span>
+                                <span>${selectedSubmission.class}</span>
+                            </div>
+                            <h2 class="text-2xl font-bold text-slate-800 uppercase tracking-tight leading-none">${selectedSubmission.name || 'Peserta'}</h2>
+                            <div class="flex gap-4 mt-4">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">PG: ${res.correct}/40 Benar</span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Keluar Tab: ${selectedSubmission.tabSwitches}x</span>
+                                <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Skor Akhir: ${res.score} (${res.grade})</span>
+                            </div>
                         </div>
-                        <button onclick="window.closeInspector()" class="text-slate-300 hover:text-slate-900 p-2 font-bold uppercase tracking-widest text-[10px]">Tutup</button>
+                        <button onclick="window.closeInspector()" class="bg-slate-50 text-slate-400 hover:text-slate-900 p-3 rounded-lg border border-slate-100 transition-all active:scale-90">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-12">
-                        <!-- PG Section -->
-                        <div class="space-y-6">
-                            <h3 class="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em]">Lembar Jawaban Pilihan Ganda</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                ${selectedSubmission.answersA.map((ans, i) => {
-                                    const isCorrect = ans === questionsA[i].key;
-                                    return `
-                                        <div class="p-4 border border-slate-100 rounded-lg bg-white shadow-sm">
-                                            <p class="text-[11px] font-bold text-slate-700 leading-relaxed mb-3">${i+1}. ${questionsA[i].q}</p>
-                                            <div class="flex items-center text-[9px] font-bold uppercase tracking-widest">
-                                                <span class="mr-3 ${isCorrect ? 'text-green-500' : 'text-red-400'}">Siswa: ${ans || '-'}</span>
-                                                ${!isCorrect ? `<span class="text-slate-300 italic">Kunci: ${questionsA[i].key}</span>` : ''}
-                                            </div>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-
-                        <!-- Essay Section -->
-                        <div class="space-y-6">
-                            <h3 class="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em]">Lembar Jawaban Essay</h3>
-                            <div class="space-y-6">
-                                ${questionsB.map((q, i) => `
-                                    <div class="p-6 border border-slate-100 rounded-lg">
-                                        <p class="text-[10px] font-bold text-slate-300 uppercase mb-2">Pertanyaan ${i+1}</p>
-                                        <p class="text-sm font-semibold text-slate-700 mb-4">${q}</p>
-                                        <div class="text-sm text-slate-500 bg-slate-50 p-4 rounded-lg font-medium border-l-2 border-slate-200">
-                                            ${selectedSubmission.answersB[i] || 'Peserta tidak menjawab.'}
+                    <!-- PG Section - Full List -->
+                    <div class="mb-20">
+                        <h3 class="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] mb-8">I. Jawaban Pilihan Ganda</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            ${selectedSubmission.answersA.map((ans, i) => {
+                                const isCorrect = ans === questionsA[i].key;
+                                return `
+                                    <div class="p-4 border border-slate-50 rounded-lg bg-slate-50/20">
+                                        <p class="text-[11px] font-bold text-slate-700 leading-relaxed mb-3">${i+1}. ${questionsA[i].q}</p>
+                                        <div class="text-[9px] font-bold uppercase tracking-widest space-y-1">
+                                            <p class="${isCorrect ? 'text-green-500' : 'text-red-400'}">Siswa: ${ans || '-'}</p>
+                                            ${!isCorrect ? `<p class="text-slate-300 font-medium lowercase">kunci: ${questionsA[i].key}</p>` : ''}
                                         </div>
                                     </div>
-                                `).join('')}
-                            </div>
+                                `;
+                            }).join('')}
                         </div>
+                    </div>
 
-                        <!-- Scoring -->
-                        <div class="bg-slate-900 p-8 rounded-xl text-white text-center mb-20">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] block mb-4">Input Skor Akhir Essay (0-20)</label>
-                            <input type="number" id="essay-score-input" value="${selectedSubmission.essayScore || 0}" min="0" max="20" class="bg-transparent border-b-2 border-slate-700 w-24 text-center text-4xl font-bold mb-8 outline-none focus:border-blue-500 transition-all">
-                            <button onclick="window.saveGrading('${selectedSubmission.id}')" class="block mx-auto bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition-all text-[10px] tracking-widest uppercase shadow-lg">Simpan Penilaian</button>
+                    <!-- Essay Section - Full List -->
+                    <div class="mb-20">
+                        <h3 class="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] mb-8">II. Jawaban Essay</h3>
+                        <div class="space-y-6">
+                            ${questionsB.map((q, i) => `
+                                <div class="p-6 border border-slate-100 rounded-lg">
+                                    <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">Soal ${i+1}</p>
+                                    <p class="text-[13px] font-semibold text-slate-800 mb-5 leading-relaxed">${q}</p>
+                                    <div class="text-[13px] leading-relaxed text-slate-600 bg-slate-50 p-6 rounded-lg border border-slate-200 italic font-medium">
+                                        ${selectedSubmission.answersB[i] || 'Peserta tidak menjawab nomor ini.'}
+                                    </div>
+                                </div>
+                            `).join('')}
                         </div>
+                    </div>
+
+                    <!-- Grading Section -->
+                    <div class="bg-white border-2 border-blue-50 p-10 rounded-2xl text-center mb-40 max-w-sm mx-auto shadow-sm">
+                        <label class="text-[10px] font-bold text-blue-500 uppercase tracking-[0.4em] block mb-6 leading-relaxed">Nilai Essay Siswa<br><span class="text-slate-300">(Range: 0 - 20)</span></label>
+                        <input type="number" id="essay-score-input" value="${selectedSubmission.essayScore || 0}" min="0" max="20" class="w-full text-center text-6xl font-bold mb-10 outline-none focus:text-blue-600 border-b border-slate-100 transition-all text-slate-800">
+                        <button onclick="window.saveGrading('${selectedSubmission.id}')" class="w-full bg-blue-600 text-white font-bold py-4 rounded-lg hover:bg-blue-700 transition-all text-[10px] tracking-[0.3em] uppercase">Simpan Nilai</button>
                     </div>
                 </div>
             </div>
             `;
         };
 
-        // --- GLOBAL ACTIONS ---
+        // --- ACTIONS ---
         window.setView = (view) => {
-            if (!isAuthReady) {
-                window.showWarning("Menghubungkan ke database...", "Tunggu");
-                return;
-            }
+            if (!isAuthReady) { window.showWarning("Menghubungkan..."); return; }
             currentView = view;
-            if (view === 'admin_dashboard') {
-                fetchSubmissions();
-            } else {
-                render();
-            }
+            if (view === 'admin_dashboard') initSubmissionsListener();
+            else { if (unsubscribeSubmissions) unsubscribeSubmissions(); render(); }
         };
 
         window.doAdminLogin = () => {
             const pass = document.getElementById('admin-pass').value;
-            if (pass === 'admin123') { window.setView('admin_dashboard'); }
-            else { window.showWarning("Akses ditolak."); }
+            if (pass === 'admin123') window.setView('admin_dashboard');
+            else window.showWarning("Sandi salah.");
         };
 
         window.handleFinish = async () => {
             if (!isAuthReady) return;
             studentName = document.getElementById('input-name').value.trim();
-            if (!studentName) return window.showWarning("Isi nama Anda.");
-            
-            const answersA = [];
+            if (!studentName) return window.showWarning("Isi Nama Lengkap.");
             for (let i = 0; i < questionsA.length; i++) {
-                const sel = document.querySelector(`input[name="qa_${i}"]:checked`);
-                if (!sel) return window.showWarning(`PG Nomor ${i+1} kosong.`);
-                answersA.push(sel.value);
+                if (!document.querySelector(`input[name="qa_${i}"]:checked`)) return window.showWarning(`PG No. ${i+1} belum dijawab.`);
             }
-            const answersB = [];
             for (let i = 0; i < questionsB.length; i++) {
-                const val = document.getElementById(`qb_${i}`).value.trim();
-                if (!val) return window.showWarning(`Essay Nomor ${i+1} kosong.`);
-                answersB.push(val);
+                if (!document.getElementById(`qb_${i}`).value.trim()) return window.showWarning(`Essay No. ${i+1} belum dijawab.`);
             }
-            try {
-                await saveDraft(true);
-                currentView = 'finished';
-                render();
-            } catch (err) { window.showWarning("Gagal. Cek internet."); }
+            try { await saveDraft(true); currentView = 'finished'; render(); }
+            catch (err) { window.showWarning("Gagal. Cek internet."); }
         };
 
-        window.inspectSubmission = (id) => {
-            selectedSubmission = submissions.find(s => s.id === id);
-            render();
-        };
-
-        window.closeInspector = () => {
-            selectedSubmission = null;
-            render();
-        };
-
+        window.inspectSubmission = (id) => { selectedSubmission = submissions.find(s => s.id === id); render(); };
+        window.closeInspector = () => { selectedSubmission = null; render(); };
         window.saveGrading = async (id) => {
             const score = document.getElementById('essay-score-input').value;
             if (score < 0 || score > 20) return window.showWarning("Skor 0-20.");
             try {
-                await updateEssayScore(id, score);
-                window.showWarning("Tersimpan.");
-            } catch (err) { }
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'submissions', id), {
+                    essayScore: parseFloat(score), graded: true
+                });
+                window.showWarning("Berhasil disimpan.", "Sukses");
+            } catch (err) { window.showWarning("Gagal simpan."); }
         };
 
         render();
