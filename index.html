@@ -28,7 +28,6 @@
             <div id="spinner" class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
             <p id="loader-text" class="text-slate-500 font-medium">Menghubungkan ke Server...</p>
             
-            <!-- Panduan Jika Config Kosong -->
             <div id="setup-guide" class="hidden mt-6 p-6 bg-white rounded-2xl shadow-xl max-w-lg border border-orange-200">
                 <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -38,7 +37,6 @@
                 <h3 class="text-lg font-bold text-slate-800 mb-2">Konfigurasi Belum Siap</h3>
                 <p class="text-sm text-slate-600 mb-4 text-left">Agar fitur simpan otomatis dan panel admin berfungsi di GitHub, Anda perlu memasukkan <b>Firebase Config</b> milik Anda ke dalam file HTML ini.</p>
                 <div class="bg-slate-900 text-slate-300 p-3 rounded-lg text-xs font-mono text-left mb-4 overflow-x-auto">
-                    // Cari bagian ini di kode:<br>
                     firebaseConfig = {<br>
                     &nbsp;&nbsp;apiKey: "ISI_DISINI",<br>
                     &nbsp;&nbsp;...<br>
@@ -49,6 +47,20 @@
         </div>
     </div>
 
+    <!-- Modal Warning (Pop-up Peringatan Bagus) -->
+    <div id="modal-warning" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-[100]">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-8 shadow-2xl text-center transform transition-all">
+            <div id="warning-icon-container" class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 id="warning-title" class="text-xl font-bold text-slate-800 mb-3">Peringatan!</h3>
+            <p id="warning-message" class="text-slate-600 mb-8 leading-relaxed"></p>
+            <button onclick="window.closeWarning()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold hover:bg-black transition-all shadow-lg active:scale-95">OK, Mengerti</button>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -56,35 +68,23 @@
         import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- KONFIGURASI DATABASE ---
-        let firebaseConfig = {};
+        let firebaseConfig = {
+            apiKey: "AIzaSyCdZliEF6yVmdQRNHhSRa4Z9YR1fn-CCYQ",
+            authDomain: "chatting-22bb9.firebaseapp.com",
+            projectId: "chatting-22bb9",
+            storageBucket: "chatting-22bb9.firebasestorage.app",
+            messagingSenderId: "540910795541",
+            appId: "1:540910795541:web:785aff5846eab68636c71c"
+        };
         let appId = 'ujian-informatika-001';
 
         try {
             if (typeof __firebase_config !== 'undefined') {
                 firebaseConfig = JSON.parse(__firebase_config);
                 appId = typeof __app_id !== 'undefined' ? __app_id : 'ujian-informatika-001';
-            } else {
-                // ==========================================
-                // JIKA DI GITHUB: KONFIGURASI OTOMATIS TERISI
-                // ==========================================
-                firebaseConfig = {
-                    apiKey: "AIzaSyCdZliEF6yVmdQRNHhSRa4Z9YR1fn-CCYQ",
-                    authDomain: "chatting-22bb9.firebaseapp.com",
-                    projectId: "chatting-22bb9",
-                    storageBucket: "chatting-22bb9.firebasestorage.app",
-                    messagingSenderId: "540910795541",
-                    appId: "1:540910795541:web:785aff5846eab68636c71c"
-                };
-                
-                if (!firebaseConfig.apiKey) {
-                    throw new Error("Missing Config");
-                }
             }
         } catch (e) {
-            console.warn("Konfigurasi Firebase Manual Diperlukan");
-            document.getElementById('spinner').classList.add('hidden');
-            document.getElementById('loader-text').classList.add('hidden');
-            document.getElementById('setup-guide').classList.remove('hidden');
+            console.warn("Config loading error");
         }
 
         const app = firebaseConfig.apiKey ? initializeApp(firebaseConfig) : null;
@@ -157,7 +157,12 @@
 
         // --- AUTH INIT ---
         const initAuth = async () => {
-            if (!auth) return;
+            if (!auth) {
+                document.getElementById('spinner').classList.add('hidden');
+                document.getElementById('loader-text').classList.add('hidden');
+                document.getElementById('setup-guide').classList.remove('hidden');
+                return;
+            }
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
@@ -175,6 +180,17 @@
             }
         };
         initAuth();
+
+        // --- POP-UP LOGIC ---
+        window.showWarning = (msg, title = "Peringatan!") => {
+            document.getElementById('warning-title').textContent = title;
+            document.getElementById('warning-message').textContent = msg;
+            document.getElementById('modal-warning').classList.remove('hidden');
+        };
+
+        window.closeWarning = () => {
+            document.getElementById('modal-warning').classList.add('hidden');
+        };
 
         // --- AUTO-SAVE LOGIC ---
         const loadExistingDraft = async () => {
@@ -262,7 +278,7 @@
             if (currentView === 'exam' && isAuthReady) {
                 tabSwitchCount++;
                 saveDraft();
-                alert(`PERINGATAN: Jangan meninggalkan halaman ujian! (Pelanggaran: ${tabSwitchCount})`);
+                window.showWarning(`Anda terdeteksi meninggalkan halaman ujian! Jangan membuka tab atau aplikasi lain. (Pelanggaran: ${tabSwitchCount} kali)`, "Kecurangan Terdeteksi!");
             }
         };
 
@@ -334,11 +350,11 @@
 
         const renderExam = () => `
             <header class="bg-blue-900 text-white py-8 px-4 shadow-lg mb-8 relative">
-                <button onclick="window.setView('admin_login')" class="absolute top-2 right-2 text-[8px] opacity-20 hover:opacity-100">ADMIN</button>
+                <button onclick="window.setView('admin_login')" class="absolute top-2 right-2 text-[8px] opacity-20 hover:opacity-100 p-2">ADMIN</button>
                 <div class="max-w-4xl mx-auto text-center">
                     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaC7zNuBILaC544879xnoWvGCnxA9Fc83PCg&s" class="h-20 mx-auto mb-4 rounded-lg shadow-lg">
                     <h2 class="text-xs font-semibold uppercase opacity-70 tracking-widest">Pemerintah Provinsi Sulawesi Selatan</h2>
-                    <h1 class="text-xl md:text-2xl font-bold mt-1">SMAS TAHFIDZ AL-QURAN WAHDAH ISLAMIYAH ANABANUA</h1>
+                    <h1 class="text-xl md:text-2xl font-bold mt-1 leading-tight">SMAS TAHFIDZ AL-QURAN WAHDAH ISLAMIYAH ANABANUA</h1>
                     <p class="text-sm mt-2 opacity-80 italic">Ujian Sekolah Mata Pelajaran: Informatika</p>
                 </div>
             </header>
@@ -346,32 +362,32 @@
             <main class="max-w-4xl mx-auto px-4 pb-32">
                 <section class="glass-card p-6 rounded-2xl mb-6 border-l-4 border-blue-500">
                     <h3 class="font-bold text-slate-800 mb-4 flex items-center">
-                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm">01</span>
+                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm font-bold">01</span>
                         Identitas Peserta
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="input-name" oninput="window.triggerAutoSave()" placeholder="Nama Lengkap *" class="p-3 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
-                        <select id="input-class" onchange="window.triggerAutoSave()" class="p-3 border rounded-lg outline-none">
+                        <input type="text" id="input-name" oninput="window.triggerAutoSave()" placeholder="Nama Lengkap *" class="p-3 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                        <select id="input-class" onchange="window.triggerAutoSave()" class="p-3 border rounded-lg outline-none bg-white">
                             <option>XII A</option>
                             <option>XII B</option>
                         </select>
                     </div>
                 </section>
 
-                <section class="glass-card p-6 rounded-2xl mb-6">
+                <section class="glass-card p-6 rounded-2xl mb-6 shadow-sm">
                     <h3 class="font-bold text-slate-800 mb-4 flex items-center">
-                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm">A</span>
+                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm font-bold">A</span>
                         Pilihan Ganda & Ceklis (80 Poin)
                     </h3>
                     <div class="space-y-6">
                         ${questionsA.map((q, i) => `
-                            <div class="p-4 border-b border-slate-100 last:border-0">
-                                <p class="font-semibold text-slate-700 mb-3">${i+1}. ${q.q}</p>
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                            <div class="p-4 border-b border-slate-100 last:border-0 hover:bg-slate-50/50 rounded-xl transition-all">
+                                <p class="font-semibold text-slate-700 mb-4 leading-relaxed">${i+1}. ${q.q}</p>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     ${q.opts.map(opt => `
-                                        <label class="flex items-center p-3 border rounded-xl hover:bg-slate-50 cursor-pointer transition-all">
-                                            <input type="radio" name="qa_${i}" value="${opt}" onchange="window.triggerAutoSave()" class="w-4 h-4 text-blue-600">
-                                            <span class="ml-3 text-sm">${opt}</span>
+                                        <label class="flex items-center p-3 border rounded-xl hover:bg-blue-50 cursor-pointer transition-all border-slate-200 bg-white shadow-sm hover:border-blue-300 group">
+                                            <input type="radio" name="qa_${i}" value="${opt}" onchange="window.triggerAutoSave()" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                                            <span class="ml-3 text-sm font-medium text-slate-600 group-hover:text-blue-700">${opt}</span>
                                         </label>
                                     `).join('')}
                                 </div>
@@ -380,102 +396,119 @@
                     </div>
                 </section>
 
-                <section class="glass-card p-6 rounded-2xl mb-10">
+                <section class="glass-card p-6 rounded-2xl mb-10 shadow-sm">
                     <h3 class="font-bold text-slate-800 mb-4 flex items-center">
-                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm">B</span>
+                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3 text-sm font-bold">B</span>
                         Essay (20 Poin)
                     </h3>
                     <div class="space-y-6">
                         ${questionsB.map((q, i) => `
-                            <div>
-                                <p class="font-semibold text-slate-700 mb-2">${i+1}. ${q}</p>
-                                <textarea id="qb_${i}" oninput="window.triggerAutoSave()" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Tulis jawaban Anda..."></textarea>
+                            <div class="hover:bg-slate-50/50 p-2 rounded-xl transition-all">
+                                <p class="font-semibold text-slate-700 mb-3">${i+1}. ${q}</p>
+                                <textarea id="qb_${i}" oninput="window.triggerAutoSave()" class="w-full p-4 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 shadow-sm" rows="3" placeholder="Tulis jawaban Anda dengan lengkap..."></textarea>
                             </div>
                         `).join('')}
                     </div>
                 </section>
 
-                <button onclick="window.handleFinish()" class="w-full bg-green-600 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-green-700 transition-all transform active:scale-95">
-                    SELESAI & KIRIM JAWABAN
+                <button onclick="window.handleFinish()" class="w-full bg-green-600 text-white font-bold py-5 rounded-2xl shadow-xl hover:bg-green-700 transition-all transform active:scale-95 text-lg">
+                    KONFIRMASI & KIRIM JAWABAN
                 </button>
             </main>
 
-            <div id="save-indicator" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-lg border border-slate-200 hidden items-center space-x-2 z-50">
-                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Tersimpan Otomatis</span>
+            <div id="save-indicator" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-md px-6 py-3 rounded-full shadow-2xl border border-blue-100 hidden items-center space-x-3 z-50">
+                <div class="w-3 h-3 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                <span class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Progress Tersimpan</span>
             </div>
         `;
 
         const renderFinished = () => `
-            <div class="min-h-screen flex items-center justify-center p-4 text-center">
-                <div class="glass-card p-10 rounded-3xl max-w-md w-full shadow-2xl">
-                    <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            <div class="min-h-screen flex items-center justify-center p-4 text-center bg-slate-50">
+                <div class="glass-card p-12 rounded-[2.5rem] max-w-md w-full shadow-2xl border-2 border-white">
+                    <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                     </div>
-                    <h2 class="text-2xl font-bold text-slate-800">Ujian Terkirim!</h2>
-                    <p class="text-slate-600 mt-3">Alhamdulillah, <b>${studentName}</b>. Jawaban Anda sudah aman.</p>
-                    <button onclick="location.reload()" class="mt-8 text-blue-600 font-semibold hover:underline">Keluar</button>
+                    <h2 class="text-3xl font-bold text-slate-800 mb-4">Ujian Selesai!</h2>
+                    <p class="text-slate-600 mb-8 leading-relaxed">Alhamdulillah, <b>${studentName}</b>. Jawaban Anda telah terkirim dan tersimpan aman di database sekolah.</p>
+                    <div class="p-5 bg-orange-50 rounded-2xl text-left border border-orange-100 mb-8">
+                        <p class="text-sm font-semibold text-orange-800">Catatan Kejujuran:</p>
+                        <p class="text-xs text-orange-700 mt-1">Anda keluar dari halaman sebanyak <b>${tabSwitchCount} kali</b> selama ujian.</p>
+                    </div>
+                    <button onclick="location.reload()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg active:scale-95">Selesai</button>
                 </div>
             </div>
         `;
 
         const renderAdminLogin = () => `
             <div class="min-h-screen flex items-center justify-center p-4 bg-slate-100 font-sans">
-                <div class="glass-card p-8 rounded-2xl w-full max-w-sm text-center shadow-xl">
-                    <h2 class="text-xl font-bold mb-4">Akses Guru</h2>
-                    <input type="password" id="admin-pass" class="w-full p-3 border rounded-lg mb-4 text-center" placeholder="Password Admin">
-                    <button onclick="window.doAdminLogin()" class="w-full bg-slate-800 text-white p-3 rounded-lg font-bold">Masuk</button>
-                    <button onclick="window.setView('exam')" class="mt-4 text-xs text-slate-400">Kembali</button>
+                <div class="glass-card p-10 rounded-[2rem] w-full max-w-sm text-center shadow-2xl border border-white">
+                    <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 rotate-3 shadow-lg">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Akses Guru</h2>
+                    <p class="text-xs text-slate-400 mb-8">Masukkan kata sandi administrator</p>
+                    <input type="password" id="admin-pass" class="w-full p-4 border border-slate-200 rounded-2xl mb-6 text-center text-lg focus:ring-4 focus:ring-blue-100 outline-none transition-all" placeholder="Password Admin">
+                    <button onclick="window.doAdminLogin()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold hover:bg-black transition-all shadow-lg active:scale-95">Masuk Sekarang</button>
+                    <button onclick="window.setView('exam')" class="mt-6 text-xs text-slate-400 hover:text-slate-600 font-medium transition-colors">← Kembali ke Halaman Ujian</button>
                 </div>
             </div>
         `;
 
         const renderAdminDashboard = () => `
-            <div class="p-4 md:p-8 max-w-7xl mx-auto">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <div class="p-6 md:p-10 max-w-7xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-end mb-10 gap-6">
                     <div>
-                        <h1 class="text-2xl font-bold text-slate-800">Dashboard Admin</h1>
-                        <p class="text-slate-500 text-sm">SMAS Tahfidz Al-Quran | PG: 80, Essay: 20 | Skala 10-98</p>
+                        <div class="flex items-center space-x-3 mb-2">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] font-bold tracking-widest uppercase">Panel Administrator</span>
+                        </div>
+                        <h1 class="text-3xl font-bold text-slate-800">Dashboard Monitoring Siswa</h1>
+                        <p class="text-slate-500 text-sm mt-1 italic">Hasil Ujian Sekolah XII Informatika</p>
                     </div>
-                    <button onclick="window.setView('exam')" class="bg-white border px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:bg-slate-50">Tutup Admin</button>
+                    <button onclick="window.setView('exam')" class="bg-white border-2 border-slate-100 px-6 py-3 rounded-2xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all active:scale-95">Keluar Panel</button>
                 </div>
 
-                <div class="glass-card rounded-2xl overflow-hidden shadow-sm overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
-                            <tr>
-                                <th class="px-6 py-4">Nama Siswa</th>
-                                <th class="px-6 py-4">Status</th>
-                                <th class="px-6 py-4">Kecurangan</th>
-                                <th class="px-6 py-4 text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 text-sm">
-                            ${submissions.length === 0 ? '<tr><td colspan="4" class="px-6 py-10 text-center text-slate-400 italic">Belum ada siswa yang login.</td></tr>' : ''}
-                            ${submissions.map(s => {
-                                const result = calculateScore(s.answersA, s.essayScore || 0);
-                                return `
-                                <tr class="hover:bg-blue-50/30 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <p class="font-bold text-slate-800">${s.name || '(Anonim)'}</p>
-                                        <p class="text-[10px] text-slate-400">${s.class}</p>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${s.finalSubmitted ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'} uppercase">
-                                            ${s.finalSubmitted ? 'Selesai' : 'Mengerjakan'}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span class="font-bold ${s.tabSwitches > 0 ? 'text-red-500' : 'text-green-600'}">${s.tabSwitches}x</span>
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <button onclick="window.inspectSubmission('${s.id}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs border border-blue-200 px-3 py-1 rounded-md">Lihat</button>
-                                    </td>
+                <div class="glass-card rounded-[2rem] overflow-hidden shadow-xl border border-white">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50/50 text-slate-400 text-[10px] uppercase tracking-[0.15em]">
+                                <tr>
+                                    <th class="px-8 py-6">Informasi Siswa</th>
+                                    <th class="px-8 py-6">Kondisi Ujian</th>
+                                    <th class="px-8 py-6">Keamanan</th>
+                                    <th class="px-8 py-6 text-center">Aksi</th>
                                 </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-sm">
+                                ${submissions.length === 0 ? '<tr><td colspan="4" class="px-8 py-16 text-center text-slate-300 italic text-lg font-medium">Belum ada siswa yang melakukan login atau mengerjakan.</td></tr>' : ''}
+                                ${submissions.map(s => {
+                                    const result = calculateScore(s.answersA, s.essayScore || 0);
+                                    return `
+                                    <tr class="hover:bg-blue-50/20 transition-colors">
+                                        <td class="px-8 py-6">
+                                            <p class="font-bold text-slate-800 text-base">${s.name || '<span class="text-slate-300 italic">Anonim</span>'}</p>
+                                            <p class="text-[10px] text-slate-400 font-semibold tracking-wider mt-0.5">${s.class}</p>
+                                        </td>
+                                        <td class="px-8 py-6">
+                                            <span class="px-4 py-1.5 rounded-full text-[9px] font-extrabold shadow-sm ${s.finalSubmitted ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-blue-100 text-blue-700 border border-blue-200'} uppercase tracking-widest">
+                                                ${s.finalSubmitted ? 'Selesai' : 'Mengerjakan'}
+                                            </span>
+                                            <p class="text-[9px] text-slate-400 mt-2 font-medium">Nilai: <span class="text-slate-700 font-bold">${result.score}</span></p>
+                                        </td>
+                                        <td class="px-8 py-6">
+                                            <div class="flex items-center space-x-2">
+                                                <div class="w-2 h-2 rounded-full ${s.tabSwitches > 0 ? 'bg-red-500 shadow-[0_0_6px_#ef4444]' : 'bg-green-500 shadow-[0_0_6px_#22c55e]'}"></div>
+                                                <span class="font-bold text-xs ${s.tabSwitches > 0 ? 'text-red-500' : 'text-slate-700'}">${s.tabSwitches}x Pindah Tab</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-8 py-6 text-center">
+                                            <button onclick="window.inspectSubmission('${s.id}')" class="bg-slate-900 text-white hover:bg-blue-600 px-6 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95">Lihat Hasil</button>
+                                        </td>
+                                    </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 ${selectedSubmission ? renderInspector() : ''}
@@ -485,47 +518,65 @@
         const renderInspector = () => {
             const result = calculateScore(selectedSubmission.answersA, selectedSubmission.essayScore || 0);
             return `
-            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                <div class="bg-white rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
-                    <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
+                <div class="bg-white rounded-[2.5rem] max-w-6xl w-full max-h-[92vh] overflow-hidden flex flex-col shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] border border-white">
+                    <div class="p-8 border-b flex justify-between items-center bg-slate-50/50">
                         <div>
-                            <h2 class="text-xl font-bold">${selectedSubmission.name}</h2>
-                            <p class="text-xs text-slate-500 italic">Skor: ${result.score} (Grade ${result.grade})</p>
+                            <h2 class="text-2xl font-bold text-slate-800">${selectedSubmission.name}</h2>
+                            <div class="flex items-center space-x-3 mt-2">
+                                <span class="text-xs bg-white border px-3 py-1 rounded-full font-bold text-slate-500 shadow-sm">${selectedSubmission.class}</span>
+                                <span class="text-xs bg-blue-600 px-3 py-1 rounded-full font-bold text-white shadow-md">Skor Akhir: ${result.score} (${result.grade})</span>
+                            </div>
                         </div>
-                        <button onclick="window.closeInspector()" class="p-2 hover:bg-slate-200 rounded-full transition-all">Tutup</button>
+                        <button onclick="window.closeInspector()" class="p-3 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-2xl transition-all active:scale-90">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
                     </div>
 
-                    <div class="flex-1 overflow-y-auto p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="flex-1 overflow-y-auto p-10 grid grid-cols-1 lg:grid-cols-2 gap-10 bg-slate-50/30">
                         <div>
-                            <h3 class="font-bold text-slate-800 mb-4 border-b pb-2 text-xs">Jawaban PG</h3>
-                            <div class="space-y-2 h-[400px] overflow-y-auto pr-2 text-[10px]">
+                            <h3 class="font-bold text-slate-800 mb-6 flex items-center text-sm uppercase tracking-widest">
+                                <span class="w-6 h-6 bg-slate-800 text-white rounded-md flex items-center justify-center mr-3 text-[10px]">A</span>
+                                Lembar Pilihan Ganda
+                            </h3>
+                            <div class="space-y-3 h-[500px] overflow-y-auto pr-4 custom-scrollbar">
                                 ${selectedSubmission.answersA.map((ans, i) => {
                                     const isCorrect = ans === questionsA[i].key;
                                     return `
-                                        <div class="p-2 border rounded-lg ${isCorrect ? 'bg-green-50 border-green-200' : ans ? 'bg-red-50 border-red-200' : 'bg-slate-100 border-slate-200'}">
-                                            <p><b>${i+1}.</b> ${questionsA[i].q}</p>
-                                            <p class="mt-1">Siswa: <span class="font-bold">${ans || '(Kosong)'}</span> ${ans && !isCorrect ? `<span class="text-slate-400"> (Kunci: ${questionsA[i].key})</span>` : ''}</p>
+                                        <div class="p-4 border rounded-2xl ${isCorrect ? 'bg-white border-green-200' : ans ? 'bg-white border-red-200' : 'bg-slate-100 border-slate-200'} shadow-sm transition-all hover:shadow-md">
+                                            <p class="text-xs font-bold text-slate-700 leading-relaxed">${i+1}. ${questionsA[i].q}</p>
+                                            <div class="mt-3 flex items-center justify-between">
+                                                <p class="text-[10px] uppercase tracking-wider">Jawaban: <span class="font-extrabold ${isCorrect ? 'text-green-600' : 'text-red-500'}">${ans || 'TIDAK DIISI'}</span></p>
+                                                ${ans && !isCorrect ? `<p class="text-[9px] text-slate-400 font-medium italic">Kunci: ${questionsA[i].key}</p>` : ''}
+                                            </div>
                                         </div>
                                     `;
                                 }).join('')}
                             </div>
                         </div>
 
-                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                            <h3 class="font-bold text-slate-800 mb-4 border-b pb-2 text-xs">Jawaban Essay</h3>
-                            <div class="space-y-4 text-[10px]">
+                        <div class="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl flex flex-col h-full">
+                            <h3 class="font-bold text-slate-800 mb-6 flex items-center text-sm uppercase tracking-widest">
+                                <span class="w-6 h-6 bg-slate-800 text-white rounded-md flex items-center justify-center mr-3 text-[10px]">B</span>
+                                Lembar Jawaban Essay
+                            </h3>
+                            <div class="space-y-6 flex-1 overflow-y-auto pr-2 mb-8">
                                 ${questionsB.map((q, i) => `
-                                    <div class="bg-white p-3 rounded-lg border border-slate-100">
-                                        <p class="font-semibold text-slate-600">${i+1}. ${q}</p>
-                                        <p class="mt-1 italic text-slate-800 bg-slate-50 p-2 rounded">${selectedSubmission.answersB[i] || '(Kosong)'}</p>
+                                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 transition-all hover:bg-slate-100/50">
+                                        <p class="text-xs font-bold text-slate-500 mb-2 tracking-wide uppercase">${i+1}. Pertanyaan</p>
+                                        <p class="text-[11px] font-semibold text-slate-700 mb-4">${q}</p>
+                                        <p class="text-xs leading-relaxed text-slate-800 font-medium bg-white p-4 rounded-xl border border-slate-200 shadow-inner">${selectedSubmission.answersB[i] || '<span class="text-slate-300 italic">Siswa tidak mengisi jawaban.</span>'}</p>
                                     </div>
                                 `).join('')}
                             </div>
 
-                            <div class="mt-8 pt-6 border-t bg-white p-4 rounded-xl border-dashed border-2 border-blue-200">
-                                <label class="block text-[10px] font-bold mb-2 uppercase tracking-wider text-blue-600">Skor Essay (0 - 20):</label>
-                                <input type="number" id="essay-score-input" value="${selectedSubmission.essayScore || 0}" min="0" max="20" class="w-full p-3 border rounded-xl mb-4 text-center text-3xl font-bold text-blue-700 outline-none">
-                                <button onclick="window.saveGrading('${selectedSubmission.id}')" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-700 transition-all">SIMPAN NILAI</button>
+                            <div class="pt-8 border-t-2 border-dashed border-slate-100 mt-auto">
+                                <div class="flex items-center justify-between mb-4">
+                                    <label class="text-[10px] font-extrabold uppercase tracking-[0.2em] text-blue-600">Skor Essay Manual (0-20)</label>
+                                    <span class="text-[10px] text-slate-300 italic font-medium">* Beri minimal 1 poin/soal</span>
+                                </div>
+                                <input type="number" id="essay-score-input" value="${selectedSubmission.essayScore || 0}" min="0" max="20" class="w-full p-5 border-2 border-blue-50 rounded-2xl mb-6 text-center text-4xl font-black text-blue-700 shadow-inner focus:ring-4 focus:ring-blue-50 focus:border-blue-200 outline-none transition-all">
+                                <button onclick="window.saveGrading('${selectedSubmission.id}')" class="w-full bg-blue-600 text-white font-bold py-5 rounded-2xl shadow-xl hover:bg-blue-700 transition-all active:scale-95 text-sm uppercase tracking-widest">Update Nilai Akhir</button>
                             </div>
                         </div>
                     </div>
@@ -544,10 +595,11 @@
 
         window.doAdminLogin = () => {
             const pass = document.getElementById('admin-pass').value;
+            // Memastikan password admin dicek dengan benar
             if (pass === 'admin123') { 
                 window.setView('admin_dashboard');
             } else {
-                alert("Password Salah!");
+                window.showWarning("Kata sandi yang Anda masukkan salah. Silakan coba lagi.", "Akses Ditolak");
             }
         };
 
@@ -556,19 +608,19 @@
             studentName = document.getElementById('input-name').value.trim();
             studentClass = document.getElementById('input-class').value;
 
-            if (!studentName) return alert("Mohon lengkapi Nama Anda!");
+            if (!studentName) return window.showWarning("Mohon lengkapi Nama Anda sebelum mengirim jawaban.", "Identitas Kosong");
 
             const answersA = [];
             for (let i = 0; i < questionsA.length; i++) {
                 const sel = document.querySelector(`input[name="qa_${i}"]:checked`);
-                if (!sel) return alert(`Soal PG nomor ${i+1} belum dijawab!`);
+                if (!sel) return window.showWarning(`Soal Pilihan Ganda nomor ${i+1} belum dijawab!`, "Belum Lengkap");
                 answersA.push(sel.value);
             }
 
             const answersB = [];
             for (let i = 0; i < questionsB.length; i++) {
                 const val = document.getElementById(`qb_${i}`).value.trim();
-                if (!val) return alert(`Soal Essay nomor ${i+1} belum dijawab!`);
+                if (!val) return window.showWarning(`Soal Essay nomor ${i+1} belum dijawab!`, "Belum Lengkap");
                 answersB.push(val);
             }
 
@@ -577,7 +629,7 @@
                 currentView = 'finished';
                 render();
             } catch (err) {
-                alert("Gagal mengirim. Periksa internet Anda.");
+                window.showWarning("Gagal mengirim jawaban. Periksa koneksi internet Anda.", "Koneksi Bermasalah");
             }
         };
 
@@ -593,9 +645,8 @@
 
         window.saveGrading = async (id) => {
             const score = document.getElementById('essay-score-input').value;
-            if (score < 0 || score > 20) return alert("Skor essay maksimal 20.");
+            if (score < 0 || score > 20) return window.showWarning("Skor essay maksimal adalah 20.", "Input Tidak Valid");
             await updateEssayScore(id, score);
-            alert("Nilai berhasil disimpan!");
         };
 
         render();
